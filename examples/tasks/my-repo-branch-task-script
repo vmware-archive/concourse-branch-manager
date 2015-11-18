@@ -1,0 +1,8 @@
+#!/usr/bin/env sh
+
+echo "In my-repo-branch-task-script, running `git status` for branch '${BRANCH_NAME}'..."
+
+cd my-repo-branch
+git status
+git branch -a
+cd ..

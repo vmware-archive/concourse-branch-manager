@@ -1,0 +1,10 @@
+---
+platform: linux
+
+image: docker:///radial/busyboxplus#git
+
+inputs:
+- name: my-repo-branch
+
+run:
+  path: my-repo-branch/examples/tasks/my-repo-branch-task-script

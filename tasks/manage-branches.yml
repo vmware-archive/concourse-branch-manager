@@ -1,0 +1,17 @@
+---
+platform: linux
+
+# TODO: make a custom busybox-based image that is smaller but has ruby + git
+image: docker:///maxmouchet/ruby-git
+
+inputs:
+- name: concourse-branch-manager
+- name: managed-repo
+
+params:
+  CONCOURSE_URL: null
+  CONCOURSE_USERNAME: null
+  CONCOURSE_PASSWORD: null
+
+run:
+  path: concourse-branch-manager/tasks/manage_branches.rb

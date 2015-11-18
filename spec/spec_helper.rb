@@ -10,6 +10,11 @@ RSpec.configure do |c|
     ENV['GIT_COMMITTER_NAME'] = 'cbm'
     ENV['GIT_COMMITTER_EMAIL'] = 'cbm@example.com'
   end
+
+  c.before(:each) do
+    # squelch log messages during specs
+    allow_any_instance_of(Cbm::Logger).to receive(:log)
+  end
 end
 
 # RSpec helper methods
