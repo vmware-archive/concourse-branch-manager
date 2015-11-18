@@ -16,7 +16,7 @@ module Cbm
       FileUtils.cd(repo_root) do
         log 'Listing remote git branches...'
         branch_str = process('git branch -r', out: :error)
-
+log "branch_str: #{branch_str}"
         branches = branch_str.split("\n")
           .reject { |branch| branch =~ /HEAD/ }
           .map { |branch| branch.strip.split('/')[1] }
