@@ -81,6 +81,7 @@ repo for which you want to dynamically build arbitrary branches.
     file: concourse-branch-manager/tasks/manage-branches.yml
     config:
       params:
+        BRANCH_REGEXP: ^feature # Optional, replace with a regular expression matching the branches you wish to build
         BRANCH_RESOURCE_TEMPLATE: managed-repo/examples/templates/my-repo-branch-resource-template.yml.erb
         BRANCH_JOB_TEMPLATE: managed-repo/examples/templates/my-repo-branch-job-template.yml.erb
         CONCOURSE_URL: {{CONCOURSE_URL}}
@@ -94,6 +95,12 @@ resource you created above.
 You may specify the `CONCOURSE_*` params directly in your pipeline YAML file, but
 since they are sensitive credentials, you should handle them via Concourse's
 support for [template variables](http://concourse.ci/fly-cli.html#parameters).
+
+The `BRANCH_REGEXP` parameter will be used to select the branches you wish to
+automatically process.  Only branches with names matching the regular expression will have
+a corresponding resource and job created for them.  This parameter is optional,
+if omitted it will default to `.*`, which will match all existing branches,
+and cause a resource and job to be created for every existing branch.
 
 The `BRANCH_RESOURCE_TEMPLATE` and `BRANCH_JOB_TEMPLATE` parameters are paths
 to ERB templates which will be used to dynamically generate a resource and

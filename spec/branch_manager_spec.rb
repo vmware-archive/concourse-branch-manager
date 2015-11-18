@@ -15,11 +15,13 @@ describe Cbm::BranchManager do
         .and_return('template-repo/resource.yml.erb')
     expect(ENV).to receive(:fetch).with('BRANCH_JOB_TEMPLATE')
         .and_return('template-repo/job.yml.erb')
+    expect(ENV).to receive(:fetch).with('BRANCH_REGEXP', anything)
+        .and_return('a')
     subject = Cbm::BranchManager.new
 
     branch_lister = double
     expect(Cbm::BranchLister).to receive(:new)
-        .with('/build-root/managed-repo')
+        .with('/build-root/managed-repo', 'a')
         .and_return(branch_lister)
     branches = %w(branch1 master)
     expect(branch_lister).to receive(:list).and_return(branches)
@@ -41,5 +43,21 @@ describe Cbm::BranchManager do
     expect(pipeline_updater).to receive(:set_pipeline)
 
     subject.run
+  end
+
+  it 'defaults BRANCH_REGEXP' do
+    allow(ENV).to receive(:fetch).and_call_original
+
+    expect(ENV).to receive(:fetch).with('BUILD_ROOT').and_return('.')
+    expect(ENV).to receive(:fetch).with('CONCOURSE_URL').and_return('.')
+    expect(ENV).to receive(:fetch).with('CONCOURSE_USERNAME').and_return('.')
+    expect(ENV).to receive(:fetch).with('CONCOURSE_PASSWORD').and_return('.')
+    expect(ENV).to receive(:fetch).with('BRANCH_RESOURCE_TEMPLATE')
+                       .and_return('.')
+    expect(ENV).to receive(:fetch).with('BRANCH_JOB_TEMPLATE')
+                       .and_return('.')
+    subject = Cbm::BranchManager.new
+
+    expect(subject.branch_regexp).to eq('.*')
   end
 end
