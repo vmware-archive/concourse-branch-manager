@@ -17,11 +17,13 @@ describe Cbm::BranchManager do
         .and_return('template-repo/job.yml.erb')
     expect(ENV).to receive(:fetch).with('BRANCH_REGEXP', anything)
         .and_return('a')
+    expect(ENV).to receive(:fetch).with('MAX_BRANCHES', anything)
+        .and_return(1)
     subject = Cbm::BranchManager.new
 
     branch_lister = double
     expect(Cbm::BranchLister).to receive(:new)
-        .with('/build-root/managed-repo', 'a')
+        .with('/build-root/managed-repo', 'a', 1)
         .and_return(branch_lister)
     branches = %w(branch1 master)
     expect(branch_lister).to receive(:list).and_return(branches)
@@ -45,7 +47,7 @@ describe Cbm::BranchManager do
     subject.run
   end
 
-  it 'defaults BRANCH_REGEXP' do
+  it 'defaults BRANCH_REGEXP, MAX_BRANCHES' do
     allow(ENV).to receive(:fetch).and_call_original
 
     expect(ENV).to receive(:fetch).with('BUILD_ROOT').and_return('.')
@@ -59,5 +61,6 @@ describe Cbm::BranchManager do
     subject = Cbm::BranchManager.new
 
     expect(subject.branch_regexp).to eq('.*')
+    expect(subject.max_branches).to eq(20)
   end
 end

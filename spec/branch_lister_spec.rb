@@ -18,7 +18,7 @@ describe Cbm::BranchLister do
       process('git checkout -b uncloned', out: :error)
     end
 
-    subject = Cbm::BranchLister.new(local_repo, '.*')
+    subject = Cbm::BranchLister.new(local_repo, '.*', 20)
     branches = subject.list
     expect(branches).to eq(%w(aaa master uncloned zzz))
   end
@@ -35,7 +35,7 @@ describe Cbm::BranchLister do
       process('git push', out: :error)
     end
 
-    subject = Cbm::BranchLister.new(local_repo, 'feature-')
+    subject = Cbm::BranchLister.new(local_repo, 'feature-', 20)
     branches = subject.list
     expect(branches).to eq(%w(feature-1 feature-2))
   end
@@ -52,8 +52,27 @@ describe Cbm::BranchLister do
       process('git push', out: :error)
     end
 
-    subject = Cbm::BranchLister.new(local_repo, 'feat(\/|\{)feature-')
+    subject = Cbm::BranchLister.new(local_repo, 'feat(\/|\{)feature-', 20)
     branches = subject.list
     expect(branches).to eq(%w(feat/feature-1 feat{feature-2))
+  end
+
+  it 'fails if more than MAX_BRANCHES matches' do
+    local_repo = make_cloned_repo[:local]
+
+    FileUtils.cd(local_repo) do
+      process('git checkout -b feature-1', out: :error)
+      process('git push', out: :error)
+      process('git checkout -b feature-2', out: :error)
+      process('git push', out: :error)
+      process('git checkout -b feature-3', out: :error)
+      process('git push', out: :error)
+    end
+
+    max_branches = 2
+    subject = Cbm::BranchLister.new(local_repo, 'feature-', max_branches)
+    expected_msg = '3 branches found. Increase MAX_BRANCHES, ' \
+      'or provide a more specific regular expression.'
+    expect { subject.list }.to raise_error(RuntimeError, expected_msg)
   end
 end

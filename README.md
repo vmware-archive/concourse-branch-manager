@@ -81,9 +81,10 @@ repo for which you want to dynamically build arbitrary branches.
     file: concourse-branch-manager/tasks/manage-branches.yml
     config:
       params:
-        BRANCH_REGEXP: ^feature # Optional, replace with a regular expression matching the branches you wish to build
+        BRANCH_REGEXP: .* # Optional, replace with a regular expression matching the branches you wish to build
         BRANCH_RESOURCE_TEMPLATE: managed-repo/examples/templates/my-repo-branch-resource-template.yml.erb
         BRANCH_JOB_TEMPLATE: managed-repo/examples/templates/my-repo-branch-job-template.yml.erb
+        MAX_BRANCHES: 20 # Optional, the maximum number of branches to process
         CONCOURSE_URL: {{CONCOURSE_URL}}
         CONCOURSE_USERNAME: {{CONCOURSE_USERNAME}}
         CONCOURSE_PASSWORD: {{CONCOURSE_PASSWORD}}
@@ -101,6 +102,11 @@ automatically process.  Only branches with names matching the regular expression
 a corresponding resource and job created for them.  This parameter is optional,
 if omitted it will default to `.*`, which will match all existing branches,
 and cause a resource and job to be created for every existing branch.
+
+The `MAX_BRANCHES` parameter defines the maximum number of branches to process. If there
+are more than this number of branches matched by the regular expression, it will fail. You
+can either increase the number of branches to process, or specify a more restrictive
+regular expression.
 
 The `BRANCH_RESOURCE_TEMPLATE` and `BRANCH_JOB_TEMPLATE` parameters are paths
 to ERB templates which will be used to dynamically generate a resource and
