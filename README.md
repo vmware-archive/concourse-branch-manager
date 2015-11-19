@@ -43,8 +43,7 @@ YAML ERB templates (2).
   type: git
   source:
     uri: https://github.com/pivotaltracker/concourse-branch-manager.git
-#    branch: master
-    branch: hacking
+    branch: master
     ignore_paths: [Gemfile, Gemfile.lock]
 
 - name: branch-manager-trigger
@@ -120,7 +119,6 @@ resource to the `branch-manager` job to contain them.  More details on this belo
 - name: branch-manager
   jobs:
   - branch-manager
-
 ```
 
 * Update your main Concourse pipeline with the new resources and job
