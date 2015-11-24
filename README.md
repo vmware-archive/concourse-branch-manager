@@ -46,18 +46,20 @@ YAML ERB templates (2).
     branch: master
     ignore_paths: [Gemfile, Gemfile.lock]
 
-- name: branch-manager-trigger
-  type: cron
-  source:
-    expression: '0 * * * *'
-    location: UTC
-
-- name: managed-repo-myrepo
-  type: git
+- name: myrepo-git-branches
+  type: git-branches
   source:
     uri: https://github.com/mygithubuser/myrepo
+# TODO: move implementation to resource
+#    max_branches: 20 # Optional, the maximum number of branches to process
+#    branch_regexp: .* # Optional, replace with a regular expression matching the branches you wish to build
+
+- name: mytemplaterepo
+  type: git
+  source:
+    uri: https://github.com/mygithubuser/mytemplaterepo
     branch: hacking
-    ignore_paths: [Gemfile, Gemfile.lock]
+    paths: [templates/*]
 ```
 
 Set the `name` and `uri` of `managed-repo-myrepo` with the name and uri of the
@@ -71,19 +73,20 @@ repo for which you want to dynamically build arbitrary branches.
   plan:
   - get: concourse-branch-manager
     params: {depth: 1}
-  - get: branch-manager-trigger
     trigger: true
-  - get: managed-repo
-    resource: managed-repo-myrepo
+  - get: git-branches
+    resource: myrepo-git-branches
+    trigger: true
+  - get: template-repo
+    resource: mytemplaterepo
     params: {depth: 1}
+    trigger: true
   - task: manage-branches
     file: concourse-branch-manager/tasks/manage-branches.yml
     config:
       params:
-        BRANCH_REGEXP: .* # Optional, replace with a regular expression matching the branches you wish to build
-        BRANCH_RESOURCE_TEMPLATE: managed-repo/examples/templates/my-repo-branch-resource-template.yml.erb
-        BRANCH_JOB_TEMPLATE: managed-repo/examples/templates/my-repo-branch-job-template.yml.erb
-        MAX_BRANCHES: 20 # Optional, the maximum number of branches to process
+        BRANCH_RESOURCE_TEMPLATE: template-repo/examples/templates/my-repo-branch-resource-template.yml.erb
+        BRANCH_JOB_TEMPLATE: template-repo/examples/templates/my-repo-branch-job-template.yml.erb
         CONCOURSE_URL: {{CONCOURSE_URL}}
         CONCOURSE_USERNAME: {{CONCOURSE_USERNAME}}
         CONCOURSE_PASSWORD: {{CONCOURSE_PASSWORD}}
@@ -184,3 +187,4 @@ plan:
     params:
       BRANCH_NAME: <%= branch_name %>
 ```
+

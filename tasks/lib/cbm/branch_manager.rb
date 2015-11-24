@@ -2,6 +2,7 @@ require_relative('branch_lister')
 require_relative('pipeline_generator')
 require_relative('pipeline_updater')
 require_relative('logger')
+require 'json'
 
 module Cbm
   # Main class and entry point
@@ -21,9 +22,16 @@ module Cbm
     end
 
     def run
-      managed_repo_root = "#{build_root}/managed-repo"
-      branches = Cbm::BranchLister.new(managed_repo_root, branch_regexp, max_branches).list
+      git_branches_root = "#{build_root}/git-branches"
+
+      # TODO: DRY THIS UP WITH BranchLister:
+      version_json_text = File.read("#{git_branches_root}/git-branches.json")
+      version = JSON.parse(version_json_text)
+      uri = version.fetch('uri')
+
+      branches = Cbm::BranchLister.new(git_branches_root, branch_regexp, max_branches).list
       pipeline_file = Cbm::PipelineGenerator.new(
+        uri,
         branches,
         resource_template_file,
         job_template_file).generate
