@@ -187,4 +187,3 @@ plan:
     params:
       BRANCH_NAME: <%= branch_name %>
 ```
-
