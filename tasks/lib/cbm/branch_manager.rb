@@ -1,13 +1,14 @@
-require_relative('branch_lister')
+require_relative('git_branches_parser')
 require_relative('pipeline_generator')
 require_relative('pipeline_updater')
 require_relative('logger')
+require 'json'
 
 module Cbm
   # Main class and entry point
   class BranchManager
     attr_reader :build_root, :url, :username, :password, :resource_template_file
-    attr_reader :job_template_file, :branch_regexp, :max_branches
+    attr_reader :job_template_file
 
     def initialize
       @build_root = ENV.fetch('BUILD_ROOT')
@@ -16,14 +17,15 @@ module Cbm
       @password = ENV.fetch('CONCOURSE_PASSWORD')
       @resource_template_file = ENV.fetch('BRANCH_RESOURCE_TEMPLATE')
       @job_template_file = ENV.fetch('BRANCH_JOB_TEMPLATE')
-      @branch_regexp = ENV.fetch('BRANCH_REGEXP', '.*')
-      @max_branches = ENV.fetch('MAX_BRANCHES', '20').to_i
     end
 
     def run
-      managed_repo_root = "#{build_root}/managed-repo"
-      branches = Cbm::BranchLister.new(managed_repo_root, branch_regexp, max_branches).list
+      git_branches_root = "#{build_root}/git-branches"
+
+      uri, branches = Cbm::GitBranchesParser.new(git_branches_root).parse
+
       pipeline_file = Cbm::PipelineGenerator.new(
+        uri,
         branches,
         resource_template_file,
         job_template_file).generate

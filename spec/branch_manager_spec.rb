@@ -1,5 +1,5 @@
 require_relative 'spec_helper'
-require_relative '../tasks/lib/cbm/branch_lister'
+require_relative '../tasks/lib/cbm/git_branches_parser'
 require_relative '../tasks/lib/cbm/branch_manager'
 require_relative '../tasks/lib/cbm/pipeline_generator'
 
@@ -15,22 +15,20 @@ describe Cbm::BranchManager do
         .and_return('template-repo/resource.yml.erb')
     expect(ENV).to receive(:fetch).with('BRANCH_JOB_TEMPLATE')
         .and_return('template-repo/job.yml.erb')
-    expect(ENV).to receive(:fetch).with('BRANCH_REGEXP', anything)
-        .and_return('a')
-    expect(ENV).to receive(:fetch).with('MAX_BRANCHES', anything)
-        .and_return(1)
     subject = Cbm::BranchManager.new
 
-    branch_lister = double
-    expect(Cbm::BranchLister).to receive(:new)
-        .with('/build-root/managed-repo', 'a', 1)
-        .and_return(branch_lister)
+    git_branches_parser = double
+    expect(Cbm::GitBranchesParser).to receive(:new)
+        .with('/build-root/git-branches')
+        .and_return(git_branches_parser)
+    uri = 'https://github.com/user/repo.git'
     branches = %w(branch1 master)
-    expect(branch_lister).to receive(:list).and_return(branches)
+    expect(git_branches_parser).to receive(:parse).and_return([uri, branches])
 
     pipeline_generator = double
     expect(Cbm::PipelineGenerator).to receive(:new)
         .with(
+          uri,
           branches,
           'template-repo/resource.yml.erb',
           'template-repo/job.yml.erb')
@@ -45,22 +43,5 @@ describe Cbm::BranchManager do
     expect(pipeline_updater).to receive(:set_pipeline)
 
     subject.run
-  end
-
-  it 'defaults BRANCH_REGEXP, MAX_BRANCHES' do
-    allow(ENV).to receive(:fetch).and_call_original
-
-    expect(ENV).to receive(:fetch).with('BUILD_ROOT').and_return('.')
-    expect(ENV).to receive(:fetch).with('CONCOURSE_URL').and_return('.')
-    expect(ENV).to receive(:fetch).with('CONCOURSE_USERNAME').and_return('.')
-    expect(ENV).to receive(:fetch).with('CONCOURSE_PASSWORD').and_return('.')
-    expect(ENV).to receive(:fetch).with('BRANCH_RESOURCE_TEMPLATE')
-                       .and_return('.')
-    expect(ENV).to receive(:fetch).with('BRANCH_JOB_TEMPLATE')
-                       .and_return('.')
-    subject = Cbm::BranchManager.new
-
-    expect(subject.branch_regexp).to eq('.*')
-    expect(subject.max_branches).to eq(20)
   end
 end

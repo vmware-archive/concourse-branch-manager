@@ -1,5 +1,6 @@
 require 'rspec'
 require 'tmpdir'
+require 'json'
 require 'process_helper'
 
 # RSpec config
@@ -21,41 +22,25 @@ end
 module SpecHelper
   include ProcessHelper
 
-  def make_cloned_repo(options = {})
-    commits = options[:commits]
-    local_repo_parent_dir = Dir.mktmpdir
-    remote_repo_dir = make_remote_repo(commits)
+  def make_git_branches_root
+    git_branches_root = Dir.mktmpdir
 
-    FileUtils.cd(local_repo_parent_dir) do
-      process("git clone #{remote_repo_dir} local_repo", out: :error)
-    end
-    local_repo_dir = "#{local_repo_parent_dir}/local_repo"
-
-    {
-      local: local_repo_dir,
-      remote: remote_repo_dir,
-    }
-  end
-
-  def make_remote_repo(commits = nil)
-    unless commits == []
-      commits = [
-        {
-          a: 1,
-        }
+    git_branches_hash = {
+      'uri' => 'https://github.com/user/repo.git',
+      'branches' => [
+        'master',
+        'feature-1'
       ]
-    end
-    remote_repo_dir = Dir.mktmpdir('remote_repo_')
-    FileUtils.cd(remote_repo_dir) do
-      process('git init', out: :error)
-      commits.each do |commit|
-        commit.each do |filename, contents|
-          process("echo #{contents} > #{filename}", out: :error)
-        end
+    }
+    git_branches_json = JSON.dump(git_branches_hash)
+
+    FileUtils.cd(git_branches_root) do
+      File.open('git-branches.json', 'w') do |file|
+        file.write(git_branches_json)
       end
-      process('git add . && git commit -m "commit 1"', out: :error) unless commits.empty?
     end
-    remote_repo_dir
+
+    git_branches_root
   end
 end
 

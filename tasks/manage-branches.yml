@@ -6,7 +6,8 @@ image: docker:///maxmouchet/ruby-git
 
 inputs:
 - name: concourse-branch-manager
-- name: managed-repo
+- name: git-branches
+- name: template-repo
 
 params:
   CONCOURSE_URL: null

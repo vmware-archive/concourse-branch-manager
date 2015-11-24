@@ -13,9 +13,22 @@ using the concourse Fly CLI to create it "on the fly" (no pun intended),
 which will contain for a job + build plan for each branch, based on
 YAML ERB templates (2).
 
-* (1) The "selected" branches can be based a regex param to the task, which can be based on
-  anything- a ref out of a github pull request json payload, a regex to build all branches
-  starting with a string (e.g. feature-, release-candidate-, etc).
+It is intended to be used with the
+[Concourse git-branches-resource](https://github.com/pivotaltracker/git-branches-resource) (3)
+to determine when and which branches should be built.  However, any resource that
+fulfills the same input contract at the git-branches-resource can be used.
+
+* (1) The "selected" branches can be based a regex config option passed
+  to the git-branches-resource (3) or other resource which fulfills the
+  resource 'input' contract to write out a `git-branches.json` containing
+  a hash with a `uri` to the repo, and an array of `branches`.
+  This list of branches can be controlled with a regex
+  (e.g. all branches starting with a string like feature-, release-candidate-, etc),
+  and also limit the maximum number of branches listed.  See the
+  [Concourse git-branches-resource](https://github.com/pivotaltracker/git-branches-resource)
+   documentation for more details.  ***NOTE:*** *In the future, support will be added
+   for automatically building branches for GitHub pull requests, via this same
+   `git-branches.json` input resource interface.*
 
 * (2) the specified resource and job YAML ERB templates can contain whatever job/plan
   processing is needed, and the name of the dynamically-selected git branch will be passed as a param,
@@ -46,18 +59,22 @@ YAML ERB templates (2).
     branch: master
     ignore_paths: [Gemfile, Gemfile.lock]
 
-- name: branch-manager-trigger
-  type: cron
-  source:
-    expression: '0 * * * *'
-    location: UTC
-
-- name: managed-repo-myrepo
-  type: git
+# This `git-branches` input resource determines which branches will be processed
+- name: myrepo-git-branches
+  type: git-branches
   source:
     uri: https://github.com/mygithubuser/myrepo
+    branch_regexp: ".*"
+    max_branches: 20
+
+# The repo containing your resource/job templates can be the same repo as
+# the one in the git-branches resource above, but it doesn't have to be
+- name: mytemplaterepo
+  type: git
+  source:
+    uri: https://github.com/mygithubuser/mytemplaterepo
     branch: hacking
-    ignore_paths: [Gemfile, Gemfile.lock]
+    paths: [templates/*]
 ```
 
 Set the `name` and `uri` of `managed-repo-myrepo` with the name and uri of the
@@ -71,41 +88,33 @@ repo for which you want to dynamically build arbitrary branches.
   plan:
   - get: concourse-branch-manager
     params: {depth: 1}
-  - get: branch-manager-trigger
     trigger: true
-  - get: managed-repo
-    resource: managed-repo-myrepo
+  - get: git-branches
+    resource: myrepo-git-branches
+    trigger: true
+  - get: template-repo
+    resource: mytemplaterepo
     params: {depth: 1}
+    trigger: true
   - task: manage-branches
     file: concourse-branch-manager/tasks/manage-branches.yml
     config:
       params:
-        BRANCH_REGEXP: .* # Optional, replace with a regular expression matching the branches you wish to build
-        BRANCH_RESOURCE_TEMPLATE: managed-repo/examples/templates/my-repo-branch-resource-template.yml.erb
-        BRANCH_JOB_TEMPLATE: managed-repo/examples/templates/my-repo-branch-job-template.yml.erb
-        MAX_BRANCHES: 20 # Optional, the maximum number of branches to process
+        BRANCH_RESOURCE_TEMPLATE: template-repo/examples/templates/my-repo-branch-resource-template.yml.erb
+        BRANCH_JOB_TEMPLATE: template-repo/examples/templates/my-repo-branch-job-template.yml.erb
         CONCOURSE_URL: {{CONCOURSE_URL}}
         CONCOURSE_USERNAME: {{CONCOURSE_USERNAME}}
         CONCOURSE_PASSWORD: {{CONCOURSE_PASSWORD}}
 ```
 
-Replace the `resource` entry under the `get: managed-repo` with the name of the `managed-repo-*`
-resource you created above.
+Replace the `resource` entries with the ones you created above.  Replace `resource: myrepo-git-branches`
+with the name of your `git-branches` resource, and replace `resource: mytemplaterepo`
+with the name of your `git` resource containing your templates.  These may both
+point to the same git repo, but they don't have to.
 
 You may specify the `CONCOURSE_*` params directly in your pipeline YAML file, but
 since they are sensitive credentials, you should handle them via Concourse's
 support for [template variables](http://concourse.ci/fly-cli.html#parameters).
-
-The `BRANCH_REGEXP` parameter will be used to select the branches you wish to
-automatically process.  Only branches with names matching the regular expression will have
-a corresponding resource and job created for them.  This parameter is optional,
-if omitted it will default to `.*`, which will match all existing branches,
-and cause a resource and job to be created for every existing branch.
-
-The `MAX_BRANCHES` parameter defines the maximum number of branches to process. If there
-are more than this number of branches matched by the regular expression, it will fail. You
-can either increase the number of branches to process, or specify a more restrictive
-regular expression.
 
 The `BRANCH_RESOURCE_TEMPLATE` and `BRANCH_JOB_TEMPLATE` parameters are paths
 to ERB templates which will be used to dynamically generate a resource and
@@ -145,8 +154,9 @@ live in your managed repo, but they don't have to - you could add an additional
 resource to the `branch-manager` job to contain them.
 
 The only requirement for these ERB templates is that they use ERB to interpolate
-the `branch_name` variable, which is automatically set to contain the
-name of the branch which was automatically detected and processed.
+the `uri` and `branch_name` variables, which are automatically set to contain the
+repo uri and name of the branch which was automatically detected and processed,
+and for which builds should be triggered.
 
 And, of course, you must create and properly reference a
 [task configuration and associated script](http://concourse.ci/running-tasks.html#configuring-tasks),
@@ -165,7 +175,7 @@ Here is an example branch resource template (this is an
 name: my-repo-branch-<%= branch_name %>
 type: git
 source:
-  uri: https://github.com/pivotaltracker/concourse-branch-manager.git
+  uri: <%= uri %>
   branch: <%= branch_name %>
 ```
 
@@ -178,6 +188,7 @@ plan:
 - get: my-repo-branch
   resource: my-repo-branch-<%= branch_name %>
   params: {depth: 1}
+  trigger: true
 - task: my-repo-branch-task
   file: my-repo-branch/examples/tasks/my-repo-branch-task.yml
   config:

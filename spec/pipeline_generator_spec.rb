@@ -4,6 +4,7 @@ require 'yaml'
 
 describe Cbm::PipelineGenerator do
   it 'generates pipeline yml' do
+    uri = 'https://github.com/user/repo.git'
     branches = %w(branch1 master)
     resource_template_fixture = File.expand_path(
       '../../examples/templates/my-repo-branch-resource-template.yml.erb', __FILE__
@@ -11,7 +12,9 @@ describe Cbm::PipelineGenerator do
     job_template_fixture = File.expand_path(
       '../../examples/templates/my-repo-branch-job-template.yml.erb', __FILE__
     )
-    subject = Cbm::PipelineGenerator.new(branches, resource_template_fixture, job_template_fixture)
+    subject = Cbm::PipelineGenerator.new(
+      uri, branches, resource_template_fixture, job_template_fixture
+    )
 
     expected_pipeline_yml_hash = {
       'resources' => [
@@ -19,7 +22,7 @@ describe Cbm::PipelineGenerator do
           'name' => 'my-repo-branch-branch1',
           'type' => 'git',
           'source' => {
-            'uri' => 'https://github.com/pivotaltracker/concourse-branch-manager.git',
+            'uri' => 'https://github.com/user/repo.git',
             'branch' => 'branch1',
           },
         },
@@ -27,7 +30,7 @@ describe Cbm::PipelineGenerator do
           'name' => 'my-repo-branch-master',
           'type' => 'git',
           'source' => {
-            'uri' => 'https://github.com/pivotaltracker/concourse-branch-manager.git',
+            'uri' => 'https://github.com/user/repo.git',
             'branch' => 'master',
           },
         },
@@ -40,6 +43,7 @@ describe Cbm::PipelineGenerator do
               'get' => 'my-repo-branch',
               'resource' => 'my-repo-branch-branch1',
               'params' => { 'depth' => 1 },
+              'trigger' => true,
             },
             {
               'task' => 'my-repo-branch-task',
@@ -59,6 +63,7 @@ describe Cbm::PipelineGenerator do
               'get' => 'my-repo-branch',
               'resource' => 'my-repo-branch-master',
               'params' => { 'depth' => 1 },
+              'trigger' => true,
             },
             {
               'task' => 'my-repo-branch-task',
