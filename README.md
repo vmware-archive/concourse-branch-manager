@@ -36,7 +36,7 @@ fulfills the same input contract at the git-branches-resource can be used.
 
 ## How it works
 
-* In your main Concourse pipeline, you will add a git resource and a job which will run
+* In your Concourse pipeline, you will add a git resource and a job which will run
   Concourse Branch Manager, and specify the necessary parameters, including credentials
   to manage your Concourse instance.
 * When the job runs its tasks, it will dynamically create/update a new pipeline which will
@@ -47,9 +47,9 @@ fulfills the same input contract at the git-branches-resource can be used.
 
 ## Setup and Usage
 
-### 1. Edit and update your main Concourse pipeline to add the concourse-branch-manager resource and job
+### 1. Edit and update your Concourse pipeline to add the three required concourse-branch-manager resources
 
-* Add the following resources to your main Concourse pipeline YAML file:
+* Add the following resources to your Concourse pipeline YAML file:
 
 ```yaml
 - name: concourse-branch-manager
@@ -60,27 +60,38 @@ fulfills the same input contract at the git-branches-resource can be used.
     ignore_paths: [Gemfile, Gemfile.lock]
 
 # This `git-branches` input resource determines which branches will be processed
-- name: myrepo-git-branches
+- name: branch-manager-git-branches
   type: git-branches
   source:
-    uri: https://github.com/mygithubuser/myrepo
+    # Set this to the uri of your repo for which you want to dynamically build arbitrary branches
+    uri: https://github.com/mygithubuser/my-repo
     branch_regexp: ".*"
     max_branches: 20
 
-# The repo containing your resource/job templates can be the same repo as
+# This repo containing your resource/job templates can be the same repo as
 # the one in the git-branches resource above, but it doesn't have to be
-- name: mytemplaterepo
+- name: branch-manager-templates
   type: git
   source:
-    uri: https://github.com/mygithubuser/mytemplaterepo
+    uri: https://github.com/mygithubuser/my-template-repo
     branch: hacking
-    paths: [templates/*]
+    paths: [ci/templates/*]
 ```
 
-Set the `name` and `uri` of `managed-repo-myrepo` with the name and uri of the
-repo for which you want to dynamically build arbitrary branches.
+* The `concourse-branch-manager` resource will always point to the `concourse-branch-manager`
+  public repo on github, and should look exactly as the above example.  This is where the logic
+  for the branch-building task lives.
 
-* Add the following job to your main Concourse pipeline YAML file:
+* Set the `uri` of the `branch-manager-git-branches` resource with the uri of your
+  repo for which you want to dynamically build arbitrary branches.
+
+* Set the `uri` of the `branch-manager-templates` resource with the uri of your
+  your `git` resource containing your resource/job templates for building branches. NOTE: This
+  may both point to the same git repo as your `git-branches` resource, but it doesn't have to.
+
+### 2. Edit and update your Concourse pipeline to add the branch-manager job:
+
+* Add the following job to your Concourse pipeline YAML file:
 
 ```yaml
 - name: branch-manager
@@ -90,27 +101,22 @@ repo for which you want to dynamically build arbitrary branches.
     params: {depth: 1}
     trigger: true
   - get: git-branches
-    resource: myrepo-git-branches
+    resource: branch-manager-git-branches
     trigger: true
   - get: template-repo
-    resource: mytemplaterepo
+    resource: branch-manager-templates
     params: {depth: 1}
     trigger: true
   - task: manage-branches
     file: concourse-branch-manager/tasks/manage-branches.yml
     config:
       params:
-        BRANCH_RESOURCE_TEMPLATE: template-repo/examples/templates/my-repo-branch-resource-template.yml.erb
-        BRANCH_JOB_TEMPLATE: template-repo/examples/templates/my-repo-branch-job-template.yml.erb
+        BRANCH_RESOURCE_TEMPLATE: template-repo/ci/templates/my-repo-branch-resource-template.yml.erb
+        BRANCH_JOB_TEMPLATE: template-repo/ci/templates/my-repo-branch-job-template.yml.erb
         CONCOURSE_URL: {{CONCOURSE_URL}}
         CONCOURSE_USERNAME: {{CONCOURSE_USERNAME}}
         CONCOURSE_PASSWORD: {{CONCOURSE_PASSWORD}}
 ```
-
-Replace the `resource` entries with the ones you created above.  Replace `resource: myrepo-git-branches`
-with the name of your `git-branches` resource, and replace `resource: mytemplaterepo`
-with the name of your `git` resource containing your templates.  These may both
-point to the same git repo, but they don't have to.
 
 You may specify the `CONCOURSE_*` params directly in your pipeline YAML file, but
 since they are sensitive credentials, you should handle them via Concourse's
@@ -122,7 +128,7 @@ job for each of your branches.  These templates can
 live in your managed repo, but they don't have to - you could add an additional
 resource to the `branch-manager` job to contain them.  More details on this below...
 
-* (optional) Add the following group to your main Concourse pipeline YAML file:
+### 3. Edit and update your Concourse pipeline to add the branch-manager group (optional):
 
 ```yaml
 - name: branch-manager
@@ -130,11 +136,7 @@ resource to the `branch-manager` job to contain them.  More details on this belo
   - branch-manager
 ```
 
-* Update your main Concourse pipeline with the new resources and job
-  using the [`fly set-pipeline`](http://concourse.ci/fly-cli.html#fly-set-pipeline)
-  command.
-
-### 2. Create a YAML ERB templates for your resource and job which will be run for each branch
+### 4. Create a YAML ERB templates for your resource and job which will be run for each branch
 
 Each arbitrary branch which is dynamically detected will have a Concourse
 [resource]() automatically created for it, and a Concourse
@@ -190,8 +192,81 @@ plan:
   params: {depth: 1}
   trigger: true
 - task: my-repo-branch-task
-  file: my-repo-branch/examples/tasks/my-repo-branch-task.yml
+  file: my-repo-branch/ci/tasks/my-repo-branch-task.yml
   config:
     params:
       BRANCH_NAME: <%= branch_name %>
 ```
+
+### 5. Create a YAML ERB templates for your resource and job which will be run for each branch
+
+* Update your Concourse pipeline with the new resources and job
+  using the [`fly set-pipeline`](http://concourse.ci/fly-cli.html#fly-set-pipeline)
+  command.
+
+## Alternate configuration options
+
+The implementation above is flexible.  Based on your situation, you can any combination of one or more
+pipelines, `git-branches` resources, template `git` resources, `branch-manager` jobs, resource templates,
+and job templates.
+
+For example, you can have one pipeline per branch, one pipeline with multiple branches, multiple
+pipelines with multiple branches, multiple jobs with different templates using different resources -
+whatever works for you.
+
+The resource naming is also flexible to allow you to have multiple `git-branches` or template `git`
+resources in the same pipeline YAML file.  The only requirement is that the `get` entries in your
+task must be named `concourse-branch-manager`, `git-branches`, and `template-repo`, since these
+are referred to by the task branch-building logic.
+
+## Live Example
+
+There is a working example pipeline which points to
+[example templates and a dummy task in the concourse-branch-manager project repo](https://github.com/pivotaltracker/concourse-branch-manager/blob/master/examples))
+
+To try it out yourself:
+
+1. (at the beginning of the day) Login to fly and save credentials in a `ci` target:
+
+    ```
+    fly login --target=ci --concourse-url=https://ci.nonprod.io
+    ```
+
+2. Download a local copy of the
+   [`branch-manager-example.yml`](https://github.com/pivotaltracker/concourse-branch-manager/blob/master/examples/pipelines/branch-manager-example.yml)
+   pipeline.  You may want to want to put this in a `ci/pipelines` directory by convention.
+
+3. Create a `secrets.yml` file containing the vars specifying the uri and credentials of your Concourse
+   server (put this some where secret and don't check it in!):
+
+    ```
+    # secrets.yml
+    CONCOURSE_URL: https://my-concourse-server.example.com
+    CONCOURSE_USERNAME: my-basic-auth-concourse-username
+    CONCOURSE_PASSWORD: my-basic-auth-concourse-password
+    ```
+
+4. Use the `fly set-pipeline` command to create/update the `branch-manager-example` pipeline:
+
+    ```
+    fly --target=ci set-pipeline --config=ci/pipelines/branch-manager-example.yml --load-vars-from=../path/to/secrets.yml --pipeline=branch-manager-example
+    ```
+
+5. (first time only) Use the `fly unpause-pipeline` commmand to unpause the pipeline the first
+   time it is created (or just click unpause in the Concourse UI):
+
+   ```
+   fly --target=ci unpause-pipeline --pipeline=branch-manager-example
+   ```
+
+6. Go to your Concourse UI (e.g. `https://my-concourse-server.example.com`), and select
+   the `branch-manager-example` pipeline from the upper-left hamburger menu.
+
+7. It should successfully build automatically in a few seconds and go green
+
+8. Refresh the page, and select the autocreated `branch-manager` pipeline from the upper-left
+   hamburger menu.  It should contain some of the dummy branches on the `concourse-branch-manager`
+   repo.  They should also all successfully build after a few seconds.
+
+That's it!  Use this as a template and example for using concourse-branch-manager in your
+own project!

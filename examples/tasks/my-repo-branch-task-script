@@ -6,3 +6,5 @@ cd my-repo-branch
 git status
 git branch -a
 cd ..
+
+echo "Successfully ran my-repo-branch-task-script for branch '${BRANCH_NAME}'!"

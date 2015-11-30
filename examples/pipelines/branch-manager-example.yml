@@ -1,0 +1,56 @@
+---
+groups:
+- name: branch-manager
+  jobs:
+  - branch-manager
+
+resources:
+- name: concourse-branch-manager
+  type: git
+  source:
+    uri: https://github.com/pivotaltracker/concourse-branch-manager.git
+    branch: master
+    ignore_paths: [Gemfile, Gemfile.lock]
+
+# This `git-branches` input resource determines which branches will be processed
+- name: branch-manager-git-branches
+  type: git-branches
+  source:
+    # Set this to the uri of your repo for which you want to dynamically build arbitrary branches
+    uri: https://github.com/pivotaltracker/concourse-branch-manager.git
+    branch_regexp: ".*"
+    max_branches: 20
+
+# This repo containing your resource/job templates can be the same repo as
+# the one in the git-branches resource above, but it doesn't have to be
+- name: branch-manager-templates
+  type: git
+  source:
+    # Set this to the uri of your repo containing your resource/job templates for building branches
+    uri: https://github.com/pivotaltracker/concourse-branch-manager.git
+    branch: master
+    paths: [examples/templates/*]
+
+jobs:
+- name: branch-manager
+  serial: true
+  plan:
+  - get: concourse-branch-manager
+    params: {depth: 1}
+    trigger: true
+  - get: git-branches
+    resource: branch-manager-git-branches
+    trigger: true
+  - get: template-repo
+    resource: branch-manager-templates
+    params: {depth: 1}
+    trigger: true
+  - task: manage-branches
+    file: concourse-branch-manager/tasks/manage-branches.yml
+    config:
+      params:
+        BRANCH_RESOURCE_TEMPLATE: template-repo/examples/templates/my-repo-branch-resource-template.yml.erb
+        BRANCH_JOB_TEMPLATE: template-repo/examples/templates/my-repo-branch-job-template.yml.erb
+        CONCOURSE_URL: {{CONCOURSE_URL}}
+        CONCOURSE_USERNAME: {{CONCOURSE_USERNAME}}
+        CONCOURSE_PASSWORD: {{CONCOURSE_PASSWORD}}
