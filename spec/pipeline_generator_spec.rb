@@ -1,4 +1,5 @@
 require_relative 'spec_helper'
+require_relative '../tasks/lib/cbm/logger'
 require_relative '../tasks/lib/cbm/pipeline_generator'
 require 'yaml'
 
@@ -51,6 +52,10 @@ describe Cbm::PipelineGenerator do
               'config' => {
                 'params' => {
                   'BRANCH_NAME' => 'branch1',
+                  'EXAMPLE_LOAD_VARS_FROM_CONFIG_KEY' =>
+                    '{{EXAMPLE_LOAD_VARS_FROM_CONFIG_KEY}}',
+                  'EXAMPLE_LOAD_VARS_FROM_CREDENTIALS_KEY' =>
+                    '{{EXAMPLE_LOAD_VARS_FROM_CREDENTIALS_KEY}}',
                 },
               },
             },
@@ -71,6 +76,10 @@ describe Cbm::PipelineGenerator do
               'config' => {
                 'params' => {
                   'BRANCH_NAME' => 'master',
+                  'EXAMPLE_LOAD_VARS_FROM_CONFIG_KEY' =>
+                    '{{EXAMPLE_LOAD_VARS_FROM_CONFIG_KEY}}',
+                  'EXAMPLE_LOAD_VARS_FROM_CREDENTIALS_KEY' =>
+                    '{{EXAMPLE_LOAD_VARS_FROM_CREDENTIALS_KEY}}',
                 },
               },
             }
@@ -81,6 +90,16 @@ describe Cbm::PipelineGenerator do
 
     pipeline_file = subject.generate
     pipeline_yml = File.read(pipeline_file)
+
+    # convert concourse pipeline param delimiters to strings so we can compare
+    # as a hash for this test
+    pipeline_yml.gsub!(
+      '{{EXAMPLE_LOAD_VARS_FROM_CONFIG_KEY}}',
+      '"{{EXAMPLE_LOAD_VARS_FROM_CONFIG_KEY}}"')
+    pipeline_yml.gsub!(
+      '{{EXAMPLE_LOAD_VARS_FROM_CREDENTIALS_KEY}}',
+      '"{{EXAMPLE_LOAD_VARS_FROM_CREDENTIALS_KEY}}"')
+
     pipeline_yml_hash = YAML.load(pipeline_yml)
 
     expect(pipeline_yml_hash).to eq(expected_pipeline_yml_hash)

@@ -29,7 +29,27 @@ resources:
     # Set this to the uri of your repo containing your resource/job templates for building branches
     uri: https://github.com/pivotaltracker/concourse-branch-manager.git
     branch: master
-    paths: [examples/templates/*]
+#    paths: [examples/templates/*]
+
+# This repo contains any non-secret non-credential config that needs to be
+# passed into your generated pipeline via fly --load-vars-from options
+- name: branch-manager-config
+  type: git
+  source:
+    # Set this to the uri of your repo containing your non-secret non-credential config
+    uri: https://github.com/pivotaltracker/concourse-branch-manager.git
+    branch: master
+#    paths: [examples/config/*]
+
+# This repo contains any secret credential config that needs to be
+# passed into your generated pipeline via fly --load-vars-from options
+- name: branch-manager-credentials
+  type: git
+  source:
+    # Set this to the uri of your repo containing your non-secret non-credential config
+    uri: https://github.com/pivotaltracker/concourse-branch-manager.git
+    branch: master
+#    paths: [examples/credentials/*]
 
 jobs:
 - name: branch-manager
@@ -45,6 +65,14 @@ jobs:
     resource: branch-manager-templates
     params: {depth: 1}
     trigger: true
+  - get: config-repo
+    resource: branch-manager-config
+    params: {depth: 1}
+    trigger: true
+  - get: credentials-repo
+    resource: branch-manager-credentials
+    params: {depth: 1}
+    trigger: true
   - task: manage-branches
     file: concourse-branch-manager/tasks/manage-branches.yml
     config:
@@ -54,3 +82,5 @@ jobs:
         CONCOURSE_URL: {{CONCOURSE_URL}}
         CONCOURSE_USERNAME: {{CONCOURSE_USERNAME}}
         CONCOURSE_PASSWORD: {{CONCOURSE_PASSWORD}}
+        PIPELINE_LOAD_VARS_FROM_1: config-repo/examples/config/my-repo-branch-manager-config.yml
+        PIPELINE_LOAD_VARS_FROM_2: credentials-repo/examples/credentials/my-repo-branch-manager-credentials.yml

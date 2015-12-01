@@ -2,6 +2,7 @@ require 'rspec'
 require 'tmpdir'
 require 'json'
 require 'process_helper'
+require_relative '../tasks/lib/cbm/logger'
 
 # RSpec config
 RSpec.configure do |c|

@@ -7,4 +7,7 @@ git status
 git branch -a
 cd ..
 
+echo "Pipeline load-vars-from values:"
+echo "  EXAMPLE_LOAD_VARS_FROM_CONFIG_KEY: $EXAMPLE_LOAD_VARS_FROM_CONFIG_KEY"
+echo "  EXAMPLE_LOAD_VARS_FROM_CREDENTIALS_KEY: $EXAMPLE_LOAD_VARS_FROM_CREDENTIALS_KEY"
 echo "Successfully ran my-repo-branch-task-script for branch '${BRANCH_NAME}'!"

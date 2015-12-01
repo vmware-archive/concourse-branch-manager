@@ -8,7 +8,7 @@ module Cbm
   # Main class and entry point
   class BranchManager
     attr_reader :build_root, :url, :username, :password, :resource_template_file
-    attr_reader :job_template_file
+    attr_reader :job_template_file, :load_vars_from_entries
 
     def initialize
       @build_root = ENV.fetch('BUILD_ROOT')
@@ -17,6 +17,7 @@ module Cbm
       @password = ENV.fetch('CONCOURSE_PASSWORD')
       @resource_template_file = ENV.fetch('BRANCH_RESOURCE_TEMPLATE')
       @job_template_file = ENV.fetch('BRANCH_JOB_TEMPLATE')
+      @load_vars_from_entries = parse_load_vars_from_entries
     end
 
     def run
@@ -29,7 +30,23 @@ module Cbm
         branches,
         resource_template_file,
         job_template_file).generate
-      Cbm::PipelineUpdater.new(url, username, password, pipeline_file).set_pipeline
+      Cbm::PipelineUpdater.new(
+        url,
+        username,
+        password,
+        pipeline_file,
+        load_vars_from_entries).set_pipeline
+    end
+
+    private
+
+    def parse_load_vars_from_entries
+      entries = ENV.keys.map do |key|
+        regexp = /^(PIPELINE_LOAD_VARS_FROM_\d+)$/
+        matches = regexp.match(key)
+        ENV.fetch(matches[1]) if matches
+      end
+      entries.compact
     end
   end
 end

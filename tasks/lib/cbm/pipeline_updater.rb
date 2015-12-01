@@ -9,13 +9,15 @@ module Cbm
     include ProcessHelper
 
     attr_reader :url, :username, :password, :pipeline_file, :fly_path
+    attr_reader :load_vars_from_entries
 
-    def initialize(url, username, password, pipeline_file)
+    def initialize(url, username, password, pipeline_file, load_vars_from_entries)
       @url = url
       @username = username
       @password = password
       @pipeline_file = pipeline_file
       @fly_path = "#{Dir.mktmpdir}/fly"
+      @load_vars_from_entries = load_vars_from_entries
     end
 
     def set_pipeline
@@ -28,9 +30,7 @@ module Cbm
         input_lines: [username, password])
 
       log 'Updating pipeline...'
-      set_pipeline_cmd = "#{fly_path} --target=concourse set-pipeline --config=#{pipeline_file} " \
-        '--pipeline=branch-manager'
-      process(set_pipeline_cmd, timeout: 5, input_lines: %w(y))
+      process(generate_set_pipeline_cmd, timeout: 5, input_lines: %w(y))
 
       log 'Unpausing pipeline...'
       unpause_pipeline_cmd = "#{fly_path} --target=concourse unpause-pipeline " \
@@ -39,6 +39,14 @@ module Cbm
     end
 
     private
+
+    def generate_set_pipeline_cmd
+      load_vars_from_options = load_vars_from_entries.reduce('') do |options, entry|
+        "#{options}--load-vars-from=#{entry} "
+      end.strip
+      "#{fly_path} --target=concourse set-pipeline --config=#{pipeline_file} " \
+        "--pipeline=branch-manager #{load_vars_from_options}"
+    end
 
     def download_fly
       log 'Downloading fly executable...'

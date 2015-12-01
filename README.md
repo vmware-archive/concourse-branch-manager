@@ -74,7 +74,7 @@ fulfills the same input contract at the git-branches-resource can be used.
   type: git
   source:
     uri: https://github.com/mygithubuser/my-template-repo
-    branch: hacking
+    branch: master
     paths: [ci/templates/*]
 ```
 
@@ -127,6 +127,8 @@ to ERB templates which will be used to dynamically generate a resource and
 job for each of your branches.  These templates can
 live in your managed repo, but they don't have to - you could add an additional
 resource to the `branch-manager` job to contain them.  More details on this below...
+
+***TODO: Document PIPELINE_LOAD_VARS_FROM and PIPELINE_VAR params***
 
 ### 3. Edit and update your Concourse pipeline to add the branch-manager group (optional):
 
@@ -229,15 +231,17 @@ To try it out yourself:
 1. (at the beginning of the day) Login to fly and save credentials in a `ci` target:
 
     ```
-    fly login --target=ci --concourse-url=https://ci.nonprod.io
+    fly login --target=ci --concourse-url=https://my-concourse-server
     ```
 
-2. Download a local copy of the
-   [`branch-manager-example.yml`](https://github.com/pivotaltracker/concourse-branch-manager/blob/master/examples/pipelines/branch-manager-example.yml)
-   pipeline.  You may want to want to put this in a `ci/pipelines` directory by convention.
+2. Clone a local copy of the
+   [`branch-manager-example` repo](https://github.com/pivotaltracker/concourse-branch-manager).
+   Note that this has all the Concourse config in an `examples` directory, but in your actual projects
+   you may want to want to put this in a `ci` directory by convention.
 
 3. Create a `secrets.yml` file containing the vars specifying the uri and credentials of your Concourse
-   server (put this some where secret and don't check it in!):
+   server.  Put this some where secret and don't check it in!  For convenience, `secrets.yml` in the root
+   of this repo is gitignored, so you can put it there if you want:
 
     ```
     # secrets.yml
@@ -249,7 +253,7 @@ To try it out yourself:
 4. Use the `fly set-pipeline` command to create/update the `branch-manager-example` pipeline:
 
     ```
-    fly --target=ci set-pipeline --config=ci/pipelines/branch-manager-example.yml --load-vars-from=../path/to/secrets.yml --pipeline=branch-manager-example
+    fly --target=ci set-pipeline --config=examples/pipelines/branch-manager-example.yml --load-vars-from=secrets.yml --pipeline=branch-manager-example
     ```
 
 5. (first time only) Use the `fly unpause-pipeline` commmand to unpause the pipeline the first

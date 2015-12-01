@@ -23,12 +23,11 @@ module Cbm
       resource_entries = create_entries_from_template(binding_class, resource_template_file)
       job_entries = create_entries_from_template(binding_class, job_template_file)
 
-      pipeline = {
-        'resources' => resource_entries,
-        'jobs' => job_entries,
-      }
-
-      pipeline_yml = YAML.dump(pipeline)
+      pipeline_yml = "---\n" \
+        "resources:\n" \
+        "#{resource_entries}\n" \
+        "jobs:\n" \
+        "#{job_entries}\n"
 
       log 'Generated pipeline yml:'
       log '-' * 80
@@ -64,13 +63,13 @@ module Cbm
 
     def create_entries_from_template(binding_class, template_file)
       template = open(template_file).read
-      branches.reduce([]) do |entries_memo, branch|
+
+      branches.reduce('') do |entries_memo, branch|
         erb_binding = binding_class.new
         erb_binding.uri = uri
         erb_binding.branch_name = branch
         entry_yml = ERB.new(template).result(erb_binding.get_binding)
-        entry = YAML.load(entry_yml)
-        entries_memo << entry
+        entries_memo.concat(entry_yml)
       end
     end
   end

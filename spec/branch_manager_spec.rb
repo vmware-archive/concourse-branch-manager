@@ -12,34 +12,44 @@ describe Cbm::BranchManager do
     expect(ENV).to receive(:fetch).with('CONCOURSE_USERNAME').and_return('username')
     expect(ENV).to receive(:fetch).with('CONCOURSE_PASSWORD').and_return('password')
     expect(ENV).to receive(:fetch).with('BRANCH_RESOURCE_TEMPLATE')
-        .and_return('template-repo/resource.yml.erb')
+      .and_return('template-repo/resource.yml.erb')
     expect(ENV).to receive(:fetch).with('BRANCH_JOB_TEMPLATE')
-        .and_return('template-repo/job.yml.erb')
+      .and_return('template-repo/job.yml.erb')
+    expect(ENV).to receive(:keys)
+      .and_return(%w(PIPELINE_LOAD_VARS_FROM_1 PIPELINE_LOAD_VARS_FROM_2 ZED))
+    expect(ENV).to receive(:fetch).with('PIPELINE_LOAD_VARS_FROM_1')
+      .and_return('path/to/config')
+    expect(ENV).to receive(:fetch).with('PIPELINE_LOAD_VARS_FROM_2')
+      .and_return('path/to/credentials')
     subject = Cbm::BranchManager.new
 
     git_branches_parser = double
     expect(Cbm::GitBranchesParser).to receive(:new)
-        .with('/build-root/git-branches')
-        .and_return(git_branches_parser)
+      .with('/build-root/git-branches')
+      .and_return(git_branches_parser)
     uri = 'https://github.com/user/repo.git'
     branches = %w(branch1 master)
     expect(git_branches_parser).to receive(:parse).and_return([uri, branches])
 
     pipeline_generator = double
     expect(Cbm::PipelineGenerator).to receive(:new)
-        .with(
-          uri,
-          branches,
-          'template-repo/resource.yml.erb',
-          'template-repo/job.yml.erb')
-        .and_return(pipeline_generator)
+      .with(
+        uri,
+        branches,
+        'template-repo/resource.yml.erb',
+        'template-repo/job.yml.erb')
+      .and_return(pipeline_generator)
     pipeline_file = double
     expect(pipeline_generator).to receive(:generate).and_return(pipeline_file)
 
     pipeline_updater = double
+    expected_load_vars_from_entries = [
+      'path/to/config',
+      'path/to/credentials',
+    ]
     expect(Cbm::PipelineUpdater).to receive(:new)
-        .with('url', 'username', 'password', pipeline_file)
-        .and_return(pipeline_updater)
+      .with('url', 'username', 'password', pipeline_file, expected_load_vars_from_entries)
+      .and_return(pipeline_updater)
     expect(pipeline_updater).to receive(:set_pipeline)
 
     subject.run

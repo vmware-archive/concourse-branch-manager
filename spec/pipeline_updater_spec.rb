@@ -1,4 +1,5 @@
 require_relative 'spec_helper'
+require_relative '../tasks/lib/cbm/logger'
 require_relative '../tasks/lib/cbm/pipeline_updater'
 
 describe Cbm::PipelineUpdater do
@@ -7,8 +8,17 @@ describe Cbm::PipelineUpdater do
     username = 'admin'
     password = 'password'
     pipeline_file = double
+    load_vars_from_1 = 'path/to/config'
+    load_vars_from_2 = 'path/to/credentials'
+    load_vars_from_entries = [load_vars_from_1, load_vars_from_2]
 
-    subject = Cbm::PipelineUpdater.new(url, username, password, pipeline_file)
+    subject = Cbm::PipelineUpdater.new(
+      url,
+      username,
+      password,
+      pipeline_file,
+      load_vars_from_entries)
+
     allow(subject).to receive(:fly_path).and_return('/path/to/fly')
 
     fly_download_url = 'http://myconcourse.example.com/api/v1/cli?arch=amd64&platform=linux'
@@ -28,7 +38,8 @@ describe Cbm::PipelineUpdater do
 
     expect(pipeline_file).to receive(:to_s).and_return('/tmp/pipeline.yml')
     set_pipeline_cmd = '/path/to/fly --target=concourse set-pipeline ' \
-      '--config=/tmp/pipeline.yml --pipeline=branch-manager'
+      '--config=/tmp/pipeline.yml --pipeline=branch-manager ' \
+      '--load-vars-from=path/to/config --load-vars-from=path/to/credentials'
     expect(subject).to receive(:process).with(set_pipeline_cmd, timeout: 5, input_lines: %w(y))
 
     unpause_cmd = '/path/to/fly --target=concourse unpause-pipeline --pipeline=branch-manager'

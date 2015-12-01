@@ -63,3 +63,6 @@ spec/bashs
 
 # Git build dir
 spec/gits
+
+# ignore any local secrets
+secrets.yml
