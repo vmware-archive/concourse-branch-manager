@@ -18,6 +18,7 @@ describe Cbm::BranchManager do
       .and_return('template-repo/resource.yml.erb')
     expect(ENV).to receive(:fetch).with('BRANCH_JOB_TEMPLATE')
       .and_return('template-repo/job.yml.erb')
+    allow(ENV).to receive(:keys).and_return(%w(UNRELATED IRRELEVANT))
 
     git_branches_parser = double
     expect(Cbm::GitBranchesParser).to receive(:new)
@@ -43,7 +44,7 @@ describe Cbm::BranchManager do
   end
 
   it 'has no syntax errors in #run' do
-    expect(ENV).to receive(:keys).and_return(%w(UNRELATED IRRELEVANT))
+    # expect(ENV).to receive(:keys).and_return(%w(UNRELATED IRRELEVANT))
     subject = Cbm::BranchManager.new
     expect(Cbm::PipelineUpdater).to receive(:new)
       .with(concourse_url, 'username', 'password', pipeline_file, [], 'cbm-repo')
@@ -75,8 +76,7 @@ describe Cbm::BranchManager do
     subject.run
   end
 
-  it 'allows optional override3 of PIPELINE_NAME' do
-    expect(ENV).to receive(:keys).and_return(%w(UNRELATED IRRELEVANT))
+  it 'allows optional override of PIPELINE_NAME' do
     expect(ENV).to receive(:fetch).with('PIPELINE_NAME', nil).and_return('name')
     subject = Cbm::BranchManager.new
     expect(Cbm::PipelineUpdater).to receive(:new)
