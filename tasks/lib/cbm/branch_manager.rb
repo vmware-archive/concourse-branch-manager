@@ -43,7 +43,7 @@ module Cbm
     private
 
     def pipeline_name_or_default
-      repo = url.split('/').last.gsub('.git','')
+      repo = url.split('/').last.gsub('.git', '')
       pipeline_name || "cbm-#{repo}"
     end
 

@@ -39,10 +39,6 @@ describe Cbm::BranchManager do
     expect(pipeline_generator).to receive(:generate).and_return(pipeline_file)
 
     @pipeline_updater = double
-    expected_load_vars_from_entries = [
-      'path/to/config',
-      'path/to/credentials',
-    ]
     expect(pipeline_updater).to receive(:set_pipeline)
   end
 
@@ -68,7 +64,13 @@ describe Cbm::BranchManager do
       'path/to/credentials',
     ]
     expect(Cbm::PipelineUpdater).to receive(:new)
-      .with(uri, 'username', 'password', pipeline_file, expected_load_vars_from_entries, 'cbm-repo')
+      .with(
+        uri,
+        'username',
+        'password',
+        pipeline_file,
+        expected_load_vars_from_entries,
+        'cbm-repo')
       .and_return(pipeline_updater)
     subject.run
   end

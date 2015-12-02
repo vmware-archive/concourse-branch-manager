@@ -9,15 +9,18 @@ module Cbm
     include ProcessHelper
 
     attr_reader :url, :username, :password, :pipeline_file, :fly_path
-    attr_reader :load_vars_from_entries
+    attr_reader :load_vars_from_entries, :pipeline_name
 
-    def initialize(url, username, password, pipeline_file, load_vars_from_entries)
+    # long parameter list is better than having to manually validate keys in an options hash
+    # rubocop:disable Metrics/ParameterLists
+    def initialize(url, username, password, pipeline_file, load_vars_from_entries, pipeline_name)
       @url = url
       @username = username
       @password = password
       @pipeline_file = pipeline_file
       @fly_path = "#{Dir.mktmpdir}/fly"
       @load_vars_from_entries = load_vars_from_entries
+      @pipeline_name = pipeline_name
     end
 
     def set_pipeline
@@ -34,7 +37,7 @@ module Cbm
 
       log 'Unpausing pipeline...'
       unpause_pipeline_cmd = "#{fly_path} --target=concourse unpause-pipeline " \
-        '--pipeline=branch-manager'
+        "--pipeline=#{pipeline_name}"
       process(unpause_pipeline_cmd, timeout: 5)
     end
 
@@ -45,7 +48,7 @@ module Cbm
         "#{options}--load-vars-from=#{entry} "
       end.strip
       "#{fly_path} --target=concourse set-pipeline --config=#{pipeline_file} " \
-        "--pipeline=branch-manager #{load_vars_from_options}"
+        "--pipeline=#{pipeline_name} #{load_vars_from_options}"
     end
 
     def download_fly
