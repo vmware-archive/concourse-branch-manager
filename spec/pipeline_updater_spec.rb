@@ -17,7 +17,8 @@ describe Cbm::PipelineUpdater do
       username,
       password,
       pipeline_file,
-      load_vars_from_entries)
+      load_vars_from_entries,
+      'my-pipeline')
 
     allow(subject).to receive(:fly_path).and_return('/path/to/fly')
 
@@ -38,11 +39,11 @@ describe Cbm::PipelineUpdater do
 
     expect(pipeline_file).to receive(:to_s).and_return('/tmp/pipeline.yml')
     set_pipeline_cmd = '/path/to/fly --target=concourse set-pipeline ' \
-      '--config=/tmp/pipeline.yml --pipeline=branch-manager ' \
+      '--config=/tmp/pipeline.yml --pipeline=my-pipeline ' \
       '--load-vars-from=path/to/config --load-vars-from=path/to/credentials'
     expect(subject).to receive(:process).with(set_pipeline_cmd, timeout: 5, input_lines: %w(y))
 
-    unpause_cmd = '/path/to/fly --target=concourse unpause-pipeline --pipeline=branch-manager'
+    unpause_cmd = '/path/to/fly --target=concourse unpause-pipeline --pipeline=my-pipeline'
     expect(subject).to receive(:process).with(unpause_cmd, timeout: 5)
 
     subject.set_pipeline

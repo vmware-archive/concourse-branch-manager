@@ -6,10 +6,10 @@ module Cbm
   # Generates pipeline yml based on branches
   class PipelineGenerator
     include Logger
-    attr_reader :uri, :branches, :resource_template_file, :job_template_file
+    attr_reader :git_uri, :branches, :resource_template_file, :job_template_file
 
-    def initialize(uri, branches, resource_template_file, job_template_file)
-      @uri = uri
+    def initialize(git_uri, branches, resource_template_file, job_template_file)
+      @git_uri = git_uri
       @branches = branches
       @resource_template_file = resource_template_file
       @job_template_file = job_template_file
@@ -66,7 +66,7 @@ module Cbm
 
       branches.reduce('') do |entries_memo, branch|
         erb_binding = binding_class.new
-        erb_binding.uri = uri
+        erb_binding.uri = git_uri
         erb_binding.branch_name = branch
         entry_yml = ERB.new(template).result(erb_binding.get_binding)
         entries_memo.concat(entry_yml)
