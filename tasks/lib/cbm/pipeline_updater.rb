@@ -11,7 +11,7 @@ module Cbm
     attr_reader :url, :username, :password, :pipeline_file, :fly_path
     attr_reader :load_vars_from_entries, :pipeline_name
 
-    # long parameter list is better than having to manually validate keys in an options hash
+    # TODO: do http://www.refactoring.com/catalog/introduceParameterObject.html
     # rubocop:disable Metrics/ParameterLists
     def initialize(url, username, password, pipeline_file, load_vars_from_entries, pipeline_name)
       @url = url

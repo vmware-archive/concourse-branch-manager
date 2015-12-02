@@ -4,7 +4,8 @@ require_relative '../tasks/lib/cbm/branch_manager'
 require_relative '../tasks/lib/cbm/pipeline_generator'
 
 describe Cbm::BranchManager do
-  attr_reader :git_uri, :concourse_url, :pipeline_file, :pipeline_updater
+  attr_reader :git_uri, :concourse_url, :pipeline_file, :pipeline_updater, :branches
+  attr_reader :pipeline_generator
 
   before do
     allow(ENV).to receive(:fetch).and_call_original
@@ -19,22 +20,26 @@ describe Cbm::BranchManager do
     expect(ENV).to receive(:fetch).with('BRANCH_JOB_TEMPLATE')
       .and_return('template-repo/job.yml.erb')
     allow(ENV).to receive(:keys).and_return(%w(UNRELATED IRRELEVANT))
+    allow(ENV)
+      .to receive(:fetch)
+        .with('PIPELINE_COMMON_RESOURCES_TEMPLATE', nil).and_return(nil)
 
     git_branches_parser = double
     expect(Cbm::GitBranchesParser).to receive(:new)
       .with('/build-root/git-branches')
       .and_return(git_branches_parser)
     @git_uri = 'https://github.com/user/repo.git'
-    branches = %w(branch1 master)
+    @branches = %w(branch1 master)
     expect(git_branches_parser).to receive(:parse).and_return([git_uri, branches])
 
-    pipeline_generator = double
-    expect(Cbm::PipelineGenerator).to receive(:new)
+    @pipeline_generator = double
+    allow(Cbm::PipelineGenerator).to receive(:new)
       .with(
         git_uri,
         branches,
         'template-repo/resource.yml.erb',
-        'template-repo/job.yml.erb')
+        'template-repo/job.yml.erb',
+        nil)
       .and_return(pipeline_generator)
     @pipeline_file = double
     expect(pipeline_generator).to receive(:generate).and_return(pipeline_file)
@@ -43,8 +48,23 @@ describe Cbm::BranchManager do
     expect(pipeline_updater).to receive(:set_pipeline)
   end
 
+  it 'works with none of the optional params specified' do
+    subject = Cbm::BranchManager.new
+    expect(Cbm::PipelineGenerator).to receive(:new)
+      .with(
+        git_uri,
+        branches,
+        'template-repo/resource.yml.erb',
+        'template-repo/job.yml.erb',
+        nil)
+      .and_return(pipeline_generator)
+    expect(Cbm::PipelineUpdater).to receive(:new)
+      .with(concourse_url, 'username', 'password', pipeline_file, [], 'cbm-repo')
+      .and_return(pipeline_updater)
+    subject.run
+  end
+
   it 'has no syntax errors in #run' do
-    # expect(ENV).to receive(:keys).and_return(%w(UNRELATED IRRELEVANT))
     subject = Cbm::BranchManager.new
     expect(Cbm::PipelineUpdater).to receive(:new)
       .with(concourse_url, 'username', 'password', pipeline_file, [], 'cbm-repo')
@@ -81,6 +101,31 @@ describe Cbm::BranchManager do
     subject = Cbm::BranchManager.new
     expect(Cbm::PipelineUpdater).to receive(:new)
       .with(concourse_url, 'username', 'password', pipeline_file, [], 'name')
+      .and_return(pipeline_updater)
+    subject.run
+  end
+
+  it 'handles the PIPELINE_COMMON_RESOURCES_TEMPLATE param' do
+    expect(ENV)
+      .to receive(:fetch)
+        .with('PIPELINE_COMMON_RESOURCES_TEMPLATE', nil).and_return('path/to/template')
+    subject = Cbm::BranchManager.new
+    expect(Cbm::PipelineGenerator).to receive(:new)
+      .with(
+        git_uri,
+        branches,
+        'template-repo/resource.yml.erb',
+        'template-repo/job.yml.erb',
+        'path/to/template')
+      .and_return(pipeline_generator)
+    expect(Cbm::PipelineUpdater).to receive(:new)
+      .with(
+        concourse_url,
+        'username',
+        'password',
+        pipeline_file,
+        [],
+        'cbm-repo')
       .and_return(pipeline_updater)
     subject.run
   end

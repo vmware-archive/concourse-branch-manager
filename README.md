@@ -128,7 +128,9 @@ job for each of your branches.  These templates can
 live in your managed repo, but they don't have to - you could add an additional
 resource to the `branch-manager` job to contain them.  More details on this below...
 
-***TODO: Document PIPELINE_LOAD_VARS_FROM and PIPELINE_VAR params***
+***TODO: Document PIPELINE_LOAD_VARS_FROM_N params***
+***TODO: Document PIPELINE_NAME param***
+***TODO: Document PIPELINE_COMMON_RESOURCES_TEMPLATE param***
 
 ### 3. Edit and update your Concourse pipeline to add the branch-manager group (optional):
 

@@ -7,27 +7,22 @@ module Cbm
   class PipelineGenerator
     include Logger
     attr_reader :git_uri, :branches, :resource_template_file, :job_template_file
+    attr_reader :common_resource_template_file
 
-    def initialize(git_uri, branches, resource_template_file, job_template_file)
+    # TODO: do http://www.refactoring.com/catalog/introduceParameterObject.html
+    # rubocop:disable Metrics/LineLength
+    def initialize(git_uri, branches, resource_template_file, job_template_file, common_resource_template_file)
       @git_uri = git_uri
       @branches = branches
       @resource_template_file = resource_template_file
       @job_template_file = job_template_file
+      @common_resource_template_file = common_resource_template_file
     end
 
     def generate
       log 'Generating pipeline file...'
 
-      binding_class = create_binding_class
-
-      resource_entries = create_entries_from_template(binding_class, resource_template_file)
-      job_entries = create_entries_from_template(binding_class, job_template_file)
-
-      pipeline_yml = "---\n" \
-        "resources:\n" \
-        "#{resource_entries}\n" \
-        "jobs:\n" \
-        "#{job_entries}\n"
+      pipeline_yml = build_yml
 
       log 'Generated pipeline yml:'
       log '-' * 80
@@ -38,6 +33,24 @@ module Cbm
     end
 
     private
+
+    def build_yml
+      binding_class = create_binding_class
+
+      resource_entries = create_entries_from_template(binding_class, resource_template_file)
+      job_entries = create_entries_from_template(binding_class, job_template_file)
+      common_resource_entries = create_common_entries_from_template(
+        binding_class,
+        common_resource_template_file
+      )
+
+      "---\n" \
+        "resources:\n" \
+        "#{resource_entries}\n" \
+        "#{common_resource_entries}\n" \
+        "jobs:\n" \
+        "#{job_entries}\n"
+    end
 
     def write_pipeline_file(pipeline_yml)
       tmpdir = Dir.mktmpdir
@@ -59,6 +72,14 @@ module Cbm
       BINDING_CLASS
       )
       binding_class
+    end
+
+    def create_common_entries_from_template(binding_class, template_file)
+      return '' unless template_file
+      template = open(template_file).read
+      erb_binding = binding_class.new
+      erb_binding.uri = git_uri
+      ERB.new(template).result(erb_binding.get_binding)
     end
 
     def create_entries_from_template(binding_class, template_file)

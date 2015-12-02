@@ -9,6 +9,7 @@ module Cbm
   class BranchManager
     attr_reader :build_root, :url, :username, :password, :resource_template_file
     attr_reader :job_template_file, :load_vars_from_entries, :pipeline_name
+    attr_reader :common_resources_template
 
     def initialize
       @build_root = ENV.fetch('BUILD_ROOT')
@@ -19,18 +20,20 @@ module Cbm
       @job_template_file = ENV.fetch('BRANCH_JOB_TEMPLATE')
       @pipeline_name = ENV.fetch('PIPELINE_NAME', nil)
       @load_vars_from_entries = parse_load_vars_from_entries
+      @common_resources_template = ENV.fetch('PIPELINE_COMMON_RESOURCES_TEMPLATE', nil)
     end
 
+    # TODO: do http://www.refactoring.com/catalog/introduceParameterObject.html
+    # rubocop:disable Metrics/AbcSize
     def run
-      git_branches_root = "#{build_root}/git-branches"
-
       git_uri, branches = Cbm::GitBranchesParser.new(git_branches_root).parse
 
       pipeline_file = Cbm::PipelineGenerator.new(
         git_uri,
         branches,
         resource_template_file,
-        job_template_file).generate
+        job_template_file,
+        common_resources_template).generate
       Cbm::PipelineUpdater.new(
         url,
         username,
@@ -41,6 +44,10 @@ module Cbm
     end
 
     private
+
+    def git_branches_root
+      "#{build_root}/git-branches"
+    end
 
     def pipeline_name_or_default(git_uri)
       repo = git_uri.split('/').last.gsub('.git', '')

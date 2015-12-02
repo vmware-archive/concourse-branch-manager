@@ -4,10 +4,6 @@
     resource: my-repo-branch-<%= branch_name %>
     params: {depth: 1}
     trigger: true
-  - get: my-repo-common-resource
-    resource: my-repo-common-resource-master
-    params: {depth: 1}
-    trigger: true
   - task: my-repo-branch-task
     file: my-repo-branch/examples/tasks/my-repo-branch-task.yml
     config:
