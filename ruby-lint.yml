@@ -10,3 +10,5 @@ analysis_classes:
  - useless_equality_checks
 directories:
  - spec
+ - tasks
+ - examples
