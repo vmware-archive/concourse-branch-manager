@@ -202,7 +202,7 @@ plan:
       BRANCH_NAME: <%= branch_name %>
 ```
 
-### 5. Create a YAML ERB templates for your resource and job which will be run for each branch
+### 5. Create/Update the Concourse pipeline
 
 * Update your Concourse pipeline with the new resources and job
   using the [`fly set-pipeline`](http://concourse.ci/fly-cli.html#fly-set-pipeline)
