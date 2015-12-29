@@ -86,3 +86,4 @@ jobs:
         PIPELINE_LOAD_VARS_FROM_1: config-repo/examples/config/my-repo-branch-manager-config.yml
         PIPELINE_LOAD_VARS_FROM_2: credentials-repo/examples/credentials/my-repo-branch-manager-credentials.yml
         PIPELINE_NAME: cbm-example-branches
+        GROUP_PER_BRANCH: true
