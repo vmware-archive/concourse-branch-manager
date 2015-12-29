@@ -12,7 +12,29 @@ describe Cbm::PipelineGenerator do
     @resource_template_fixture = File.expand_path(
       '../../examples/templates/my-repo-branch-resource-template.yml.erb', __FILE__
     )
+
     @expected_pipeline_yml_hash = {
+      'groups' => [
+        {
+          'name' => '000-all',
+          'jobs' => [
+            'my-repo-branch-job-branch1',
+            'my-repo-branch-job-master',
+          ],
+        },
+        {
+          'name' => 'branch1',
+          'jobs' => [
+            'my-repo-branch-job-branch1',
+          ],
+        },
+        {
+          'name' => 'master',
+          'jobs' => [
+            'my-repo-branch-job-master',
+          ],
+        },
+      ],
       'resources' => [
         {
           'name' => 'my-repo-branch-branch1',
@@ -113,7 +135,7 @@ describe Cbm::PipelineGenerator do
       '../../examples/templates/my-repo-branch-job-template.yml.erb', __FILE__
     )
     subject = Cbm::PipelineGenerator.new(
-      uri, branches, resource_template_fixture, job_template_fixture, common_resource_fixture
+      uri, branches, resource_template_fixture, job_template_fixture, common_resource_fixture, true
     )
 
     pipeline_file = subject.generate
@@ -129,7 +151,30 @@ describe Cbm::PipelineGenerator do
       '../fixtures/my-repo-branch-job-template-without-common-resource.yml.erb', __FILE__
     )
     subject = Cbm::PipelineGenerator.new(
-      uri, branches, resource_template_fixture, job_template_fixture, nil
+      uri, branches, resource_template_fixture, job_template_fixture, nil, true
+    )
+
+    pipeline_file = subject.generate
+    perform_assertion(expected_pipeline_yml_hash, pipeline_file)
+  end
+
+  it 'generates pipeline yml with group_per_branch set to false' do
+    expected_pipeline_yml_hash.delete('groups')
+
+    common_resource_fixture = File.expand_path(
+      '../../examples/templates/my-repo-common-resources-template.yml.erb', __FILE__
+    )
+
+    job_template_fixture = File.expand_path(
+      '../../examples/templates/my-repo-branch-job-template.yml.erb', __FILE__
+    )
+    subject = Cbm::PipelineGenerator.new(
+      uri,
+      branches,
+      resource_template_fixture,
+      job_template_fixture,
+      common_resource_fixture,
+      false
     )
 
     pipeline_file = subject.generate

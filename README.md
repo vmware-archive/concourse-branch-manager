@@ -131,6 +131,7 @@ resource to the `branch-manager` job to contain them.  More details on this belo
 ***TODO: Document PIPELINE_LOAD_VARS_FROM_N params***
 ***TODO: Document PIPELINE_NAME param***
 ***TODO: Document PIPELINE_COMMON_RESOURCES_TEMPLATE param***
+***TODO: Document GROUP_PER_BRANCH param***
 
 ### 3. Edit and update your Concourse pipeline to add the branch-manager group (optional):
 
