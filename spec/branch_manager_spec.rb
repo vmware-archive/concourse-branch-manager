@@ -23,6 +23,7 @@ describe Cbm::BranchManager do
     allow(ENV)
       .to receive(:fetch)
         .with('PIPELINE_COMMON_RESOURCES_TEMPLATE', nil).and_return(nil)
+    allow(ENV).to receive(:fetch).with('GROUP_PER_BRANCH', 'true').and_return('false')
 
     git_branches_parser = double
     expect(Cbm::GitBranchesParser).to receive(:new)
@@ -39,7 +40,8 @@ describe Cbm::BranchManager do
         branches,
         'template-repo/resource.yml.erb',
         'template-repo/job.yml.erb',
-        nil)
+        nil,
+        false)
       .and_return(pipeline_generator)
     @pipeline_file = double
     expect(pipeline_generator).to receive(:generate).and_return(pipeline_file)
@@ -56,7 +58,8 @@ describe Cbm::BranchManager do
         branches,
         'template-repo/resource.yml.erb',
         'template-repo/job.yml.erb',
-        nil)
+        nil,
+        false)
       .and_return(pipeline_generator)
     expect(Cbm::PipelineUpdater).to receive(:new)
       .with(concourse_url, 'username', 'password', pipeline_file, [], 'cbm-repo')
@@ -116,7 +119,8 @@ describe Cbm::BranchManager do
         branches,
         'template-repo/resource.yml.erb',
         'template-repo/job.yml.erb',
-        'path/to/template')
+        'path/to/template',
+        false)
       .and_return(pipeline_generator)
     expect(Cbm::PipelineUpdater).to receive(:new)
       .with(

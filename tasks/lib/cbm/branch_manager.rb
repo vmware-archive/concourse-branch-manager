@@ -9,7 +9,7 @@ module Cbm
   class BranchManager
     attr_reader :build_root, :url, :username, :password, :resource_template_file
     attr_reader :job_template_file, :load_vars_from_entries, :pipeline_name
-    attr_reader :common_resources_template
+    attr_reader :common_resources_template, :group_per_branch
 
     def initialize
       @build_root = ENV.fetch('BUILD_ROOT')
@@ -21,6 +21,7 @@ module Cbm
       @pipeline_name = ENV.fetch('PIPELINE_NAME', nil)
       @load_vars_from_entries = parse_load_vars_from_entries
       @common_resources_template = ENV.fetch('PIPELINE_COMMON_RESOURCES_TEMPLATE', nil)
+      @group_per_branch = ENV.fetch('GROUP_PER_BRANCH', 'true') == 'true'
     end
 
     # TODO: do http://www.refactoring.com/catalog/introduceParameterObject.html
@@ -33,7 +34,8 @@ module Cbm
         branches,
         resource_template_file,
         job_template_file,
-        common_resources_template).generate
+        common_resources_template,
+        group_per_branch).generate
       Cbm::PipelineUpdater.new(
         url,
         username,
