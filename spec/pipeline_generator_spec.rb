@@ -68,13 +68,13 @@ describe Cbm::PipelineGenerator do
             {
               'get' => 'my-repo-branch',
               'resource' => 'my-repo-branch-branch1',
-              'params' => { 'depth' => 1 },
+              'params' => { 'depth' => 20 },
               'trigger' => true,
             },
             {
               'get' => 'my-repo-common-resource',
               'resource' => 'my-repo-common-resource-master',
-              'params' => { 'depth' => 1 },
+              'params' => { 'depth' => 20 },
               'trigger' => true,
             },
             {
@@ -98,13 +98,13 @@ describe Cbm::PipelineGenerator do
             {
               'get' => 'my-repo-branch',
               'resource' => 'my-repo-branch-master',
-              'params' => { 'depth' => 1 },
+              'params' => { 'depth' => 20 },
               'trigger' => true,
             },
             {
               'get' => 'my-repo-common-resource',
               'resource' => 'my-repo-common-resource-master',
-              'params' => { 'depth' => 1 },
+              'params' => { 'depth' => 20 },
               'trigger' => true,
             },
             {

@@ -98,14 +98,14 @@ fulfills the same input contract at the git-branches-resource can be used.
   serial: true
   plan:
   - get: concourse-branch-manager
-    params: {depth: 1}
+    params: {depth: 20}
     trigger: true
   - get: git-branches
     resource: branch-manager-git-branches
     trigger: true
   - get: template-repo
     resource: branch-manager-templates
-    params: {depth: 1}
+    params: {depth: 20}
     trigger: true
   - task: manage-branches
     file: concourse-branch-manager/tasks/manage-branches.yml
@@ -194,7 +194,7 @@ name: my-repo-branch-job-<%= branch_name %>
 plan:
 - get: my-repo-branch
   resource: my-repo-branch-<%= branch_name %>
-  params: {depth: 1}
+  params: {depth: 20}
   trigger: true
 - task: my-repo-branch-task
   file: my-repo-branch/ci/tasks/my-repo-branch-task.yml

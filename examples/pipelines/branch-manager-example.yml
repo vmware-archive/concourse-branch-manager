@@ -56,22 +56,22 @@ jobs:
   serial: true
   plan:
   - get: concourse-branch-manager
-    params: {depth: 1}
+    params: {depth: 20}
     trigger: true
   - get: git-branches
     resource: branch-manager-git-branches
     trigger: true
   - get: template-repo
     resource: branch-manager-templates
-    params: {depth: 1}
+    params: {depth: 20}
     trigger: true
   - get: config-repo
     resource: branch-manager-config
-    params: {depth: 1}
+    params: {depth: 20}
     trigger: true
   - get: credentials-repo
     resource: branch-manager-credentials
-    params: {depth: 1}
+    params: {depth: 20}
     trigger: true
   - task: manage-branches
     file: concourse-branch-manager/tasks/manage-branches.yml

@@ -2,7 +2,7 @@
   plan:
   - get: my-repo-branch
     resource: my-repo-branch-<%= branch_name %>
-    params: {depth: 1}
+    params: {depth: 20}
     trigger: true
   - task: my-repo-branch-task
     file: my-repo-branch/examples/tasks/my-repo-branch-task.yml
