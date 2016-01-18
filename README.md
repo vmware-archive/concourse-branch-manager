@@ -277,3 +277,15 @@ To try it out yourself:
 
 That's it!  Use this as a template and example for using concourse-branch-manager in your
 own project!
+
+## Dealing with Concourse UI issues due to many branches/groups
+
+* It is recommended that you keep the number of branches limited.  The git-branches-resource
+  resource by default limits you to 20, but the Concourse UI starts having layout issues
+  with fewer than that.  The biggest problem is z-index issues that prevent usage of the
+  pipelines menu.
+* [This issue against Concourse ATC](https://github.com/concourse/atc/issues/39)
+  (the Concourse UI) reports these issues, and contains a javascript bookmarklet
+  that makes some hacks to fix the issues.  The recommended fix by the concourse team
+  would be to make the groups scrollable like the build numbers at the top of a build
+  page.  A pull request would be welcome ;)
