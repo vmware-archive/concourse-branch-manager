@@ -1,6 +1,8 @@
 # Concourse Branch Manager
 
-Automatically build arbitrary branches on [Concourse CI](http://concourse.ci/).
+Automatically build arbitrary branches on [Concourse CI](http://concourse.ci/) without relying on Github pull requests.
+
+See and vote for [this issue](https://github.com/concourse/concourse/issues/239) to get official support for building arbitrary branches without pull requests added to Concourse.
 
 ![Branches](https://cdn.rawgit.com/pivotaltracker/concourse-branch-manager/master/branches.svg)
 
