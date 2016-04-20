@@ -1,7 +1,11 @@
 ---
 platform: linux
 
-image: docker:///tracker/busyboxplus#ruby-git
+image_resource: 
+  type: docker-image
+  source: 
+    repository: tracker/busyboxplus
+    tag: ruby-git
 
 inputs:
 - name: concourse-branch-manager
