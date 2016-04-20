@@ -49,6 +49,10 @@ fulfills the same input contract at the git-branches-resource can be used.
 
 ## Setup and Usage
 
+### 0. Enable Concourse authentication
+
+* The branch manager will not work with non-authenticating (development mode) Concourse instances. Any password based authentication mecanism will do (Basic, OAuth...)   
+
 ### 1. Edit and update your Concourse pipeline to add the three required concourse-branch-manager resources
 
 * Add the following resources to your Concourse pipeline YAML file:
