@@ -49,6 +49,10 @@ fulfills the same input contract at the git-branches-resource can be used.
 
 ## Setup and Usage
 
+### 0. Enable Concourse authentication
+
+* The branch manager will not work with non-authenticating (development mode) Concourse instances. Any password based authentication mecanism will do (Basic, OAuth...)   
+
 ### 1. Edit and update your Concourse pipeline to add the three required concourse-branch-manager resources
 
 * Add the following resources to your Concourse pipeline YAML file:
@@ -78,6 +82,26 @@ fulfills the same input contract at the git-branches-resource can be used.
     uri: https://github.com/mygithubuser/my-template-repo
     branch: master
     paths: [ci/templates/*]
+    
+# This repo contains any non-secret non-credential config that needs to be
+# passed into your generated pipeline via fly --load-vars-from options
+- name: branch-manager-config
+  type: git
+  source:
+    # Set this to the uri of your repo containing your non-secret non-credential config
+    uri: https://github.com/pivotaltracker/concourse-branch-manager.git
+    branch: master
+#    paths: [ci/config/*]
+
+# This repo contains any secret credential config that needs to be
+# passed into your generated pipeline via fly --load-vars-from options
+- name: branch-manager-credentials
+  type: git
+  source:
+    # Set this to the uri of your repo containing your non-secret non-credential config
+    uri: https://github.com/pivotaltracker/concourse-branch-manager.git
+    branch: master
+#    paths: [ci/credentials/*]
 ```
 
 * The `concourse-branch-manager` resource will always point to the `concourse-branch-manager`
@@ -109,6 +133,14 @@ fulfills the same input contract at the git-branches-resource can be used.
     resource: branch-manager-templates
     params: {depth: 20}
     trigger: true
+  - get: config-repo
+    resource: branch-manager-config
+    params: {depth: 20}
+    trigger: true
+  - get: credentials-repo
+    resource: branch-manager-credentials
+    params: {depth: 20}
+    trigger: true    
   - task: manage-branches
     file: concourse-branch-manager/tasks/manage-branches.yml
     config:
@@ -143,7 +175,17 @@ resource to the `branch-manager` job to contain them.  More details on this belo
   - branch-manager
 ```
 
-### 4. Create a YAML ERB templates for your resource and job which will be run for each branch
+### 4. Add the git-branch resource type to your pipeline (optional)
+
+```yaml
+resource_types:
+- name: git-branches
+  type: docker-image
+  source:
+    repository: cfcommunity/git-branches-resource
+```
+
+### 5. Create a YAML ERB templates for your resource and job which will be run for each branch
 
 Each arbitrary branch which is dynamically detected will have a Concourse
 [resource]() automatically created for it, and a Concourse
@@ -205,7 +247,7 @@ plan:
       BRANCH_NAME: <%= branch_name %>
 ```
 
-### 5. Create/Update the Concourse pipeline
+### 6. Create/Update the Concourse pipeline
 
 * Update your Concourse pipeline with the new resources and job
   using the [`fly set-pipeline`](http://concourse.ci/fly-cli.html#fly-set-pipeline)
