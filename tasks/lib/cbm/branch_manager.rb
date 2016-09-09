@@ -7,7 +7,7 @@ require 'json'
 module Cbm
   # Main class and entry point
   class BranchManager
-    attr_reader :build_root, :url, :username, :password, :resource_template_file
+    attr_reader :build_root, :url, :username, :password, :username, :team, :resource_template_file
     attr_reader :job_template_file, :load_vars_from_entries, :pipeline_name
     attr_reader :common_resources_template, :group_per_branch
 
@@ -16,6 +16,7 @@ module Cbm
       @url = ENV.fetch('CONCOURSE_URL')
       @username = ENV.fetch('CONCOURSE_USERNAME')
       @password = ENV.fetch('CONCOURSE_PASSWORD')
+      @team = ENV.fetch('CONCOURSE_TEAM', nil)
       @resource_template_file = ENV.fetch('BRANCH_RESOURCE_TEMPLATE')
       @job_template_file = ENV.fetch('BRANCH_JOB_TEMPLATE')
       @pipeline_name = ENV.fetch('PIPELINE_NAME', nil)
@@ -40,6 +41,7 @@ module Cbm
         url,
         username,
         password,
+        team,
         pipeline_file,
         load_vars_from_entries,
         pipeline_name_or_default(git_uri)).set_pipeline

@@ -8,15 +8,16 @@ module Cbm
     include Logger
     include ProcessHelper
 
-    attr_reader :url, :username, :password, :pipeline_file, :fly_path
+    attr_reader :url, :username, :password, :team, :pipeline_file, :fly_path
     attr_reader :load_vars_from_entries, :pipeline_name
 
     # TODO: do http://www.refactoring.com/catalog/introduceParameterObject.html
     # rubocop:disable Metrics/ParameterLists
-    def initialize(url, username, password, pipeline_file, load_vars_from_entries, pipeline_name)
+    def initialize(url, username, password, team, pipeline_file, load_vars_from_entries, pipeline_name)
       @url = url
       @username = username
       @password = password
+      @team = team
       @pipeline_file = pipeline_file
       @fly_path = "#{Dir.mktmpdir}/fly"
       @load_vars_from_entries = load_vars_from_entries
@@ -27,8 +28,9 @@ module Cbm
       download_fly
 
       log 'Logging into concourse...'
+      team_argument = team != nil && team != "" ? "--team-name=#{team}" : ''
       process(
-        "#{fly_path} --target=concourse login --concourse-url=#{url}",
+        "#{fly_path} --target=concourse login --concourse-url=#{url} #{team_argument}",
         timeout: 5,
         input_lines: [username, password])
 

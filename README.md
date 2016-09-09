@@ -82,7 +82,7 @@ fulfills the same input contract at the git-branches-resource can be used.
     uri: https://github.com/mygithubuser/my-template-repo
     branch: master
     paths: [ci/templates/*]
-    
+
 # This repo contains any non-secret non-credential config that needs to be
 # passed into your generated pipeline via fly --load-vars-from options
 - name: branch-manager-config
@@ -150,11 +150,14 @@ fulfills the same input contract at the git-branches-resource can be used.
         CONCOURSE_URL: {{CONCOURSE_URL}}
         CONCOURSE_USERNAME: {{CONCOURSE_USERNAME}}
         CONCOURSE_PASSWORD: {{CONCOURSE_PASSWORD}}
+        CONCOURSE_TEAM: {{CONCOURSE_TEAM}} # Add this if you have a team
 ```
 
 You may specify the `CONCOURSE_*` params directly in your pipeline YAML file, but
 since they are sensitive credentials, you should handle them via Concourse's
 support for [template variables](http://concourse.ci/fly-cli.html#parameters).
+
+If you're using the [teams feature](http://concourse.ci/teams.html) and want to add the pipeline to a team other than `main`, specify it in the `CONCOURSE_TEAM` params. If this params is omitted, no team will be specified.
 
 The `BRANCH_RESOURCE_TEMPLATE` and `BRANCH_JOB_TEMPLATE` parameters are paths
 to ERB templates which will be used to dynamically generate a resource and
