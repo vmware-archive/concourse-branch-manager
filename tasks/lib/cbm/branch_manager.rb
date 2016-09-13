@@ -9,7 +9,7 @@ module Cbm
   class BranchManager
     attr_reader :build_root, :url, :username, :password, :username, :team, :resource_template_file
     attr_reader :job_template_file, :load_vars_from_entries, :pipeline_name
-    attr_reader :common_resources_template, :group_per_branch
+    attr_reader :common_resources_template, :group_per_branch, :resource_type_template_file
 
     def initialize
       @build_root = ENV.fetch('BUILD_ROOT')
@@ -22,6 +22,7 @@ module Cbm
       @pipeline_name = ENV.fetch('PIPELINE_NAME', nil)
       @load_vars_from_entries = parse_load_vars_from_entries
       @common_resources_template = ENV.fetch('PIPELINE_COMMON_RESOURCES_TEMPLATE', nil)
+      @resource_type_template_file = ENV.fetch('PIPELINE_RESOURCE_TYPE_TEMPLATE', nil)
       @group_per_branch = ENV.fetch('GROUP_PER_BRANCH', 'true') == 'true'
     end
 
@@ -36,6 +37,7 @@ module Cbm
         resource_template_file,
         job_template_file,
         common_resources_template,
+        resource_type_template_file,
         group_per_branch).generate
       Cbm::PipelineUpdater.new(
         url,

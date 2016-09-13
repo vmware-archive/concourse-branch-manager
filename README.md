@@ -159,15 +159,19 @@ support for [template variables](http://concourse.ci/fly-cli.html#parameters).
 
 If you're using the [teams feature](http://concourse.ci/teams.html) and want to add the pipeline to a team other than `main`, specify it in the `CONCOURSE_TEAM` params. If this params is omitted, no team will be specified.
 
-The `BRANCH_RESOURCE_TEMPLATE` and `BRANCH_JOB_TEMPLATE` parameters are paths
-to ERB templates which will be used to dynamically generate a resource and
-job for each of your branches.  These templates can
+There are several params available to configure the templates. Each is a path to a file containing an ERB template.
+
+* `BRANCH_RESOURCE_TEMPLATE` - resources to be added to each branch
+* `BRANCH_JOB_TEMPLATE` - jobs to be added to each branch
+* `PIPELINE_COMMON_RESOURCES_TEMPLATE` - resources which will be added only once to the pipeline
+* `PIPELINE_RESOURCE_TYPE_TEMPLATE` - [resource _types_](https://concourse.ci/configuring-resource-types.html) to be added to the pipeline
+
+These templates can
 live in your managed repo, but they don't have to - you could add an additional
 resource to the `branch-manager` job to contain them.  More details on this below...
 
 ***TODO: Document PIPELINE_LOAD_VARS_FROM_N params***
 ***TODO: Document PIPELINE_NAME param***
-***TODO: Document PIPELINE_COMMON_RESOURCES_TEMPLATE param***
 ***TODO: Document GROUP_PER_BRANCH param***
 
 ### 3. Edit and update your Concourse pipeline to add the branch-manager group (optional):
