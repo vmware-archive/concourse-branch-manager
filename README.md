@@ -189,7 +189,7 @@ resource_types:
 - name: git-branches
   type: docker-image
   source:
-    repository: cfcommunity/git-branches-resource
+    repository: tracker/git-branches-resource
 ```
 
 ### 5. Create a YAML ERB templates for your resource and job which will be run for each branch
