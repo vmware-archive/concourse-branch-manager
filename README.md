@@ -17,8 +17,18 @@ YAML ERB templates (2).
 
 It is intended to be used with the
 [Concourse git-branches-resource](https://github.com/pivotaltracker/git-branches-resource) (3)
+which is published on Docker Hub at
+[tracker/git-branches-resource](https://hub.docker.com/r/tracker/git-branches-resource/)
 to determine when and which branches should be built.  However, any resource that
-fulfills the same input contract at the git-branches-resource can be used.
+fulfills the same input contract at the git-branches-resource can be used. 
+**NOTE: That there is now an 
+[identically named git-branches-resource](https://github.com/vito/git-branches-resource)
+which is published on Docker Hub at
+[cfcommunity/git-branches-resource](https://hub.docker.com/r/cfcommunity/git-branches-resource/),
+however, this one is does NOT currently have some of the features which
+[tracker/git-branches-resource](https://hub.docker.com/r/tracker/git-branches-resource/)
+has, such as regex matching and a max branches limit.  The rest of this
+documentation assumes you are using the latter.  Caveat Emptor.** 
 
 * (1) The "selected" branches can be based a regex config option passed
   to the git-branches-resource (3) or other resource which fulfills the
