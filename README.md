@@ -1,3 +1,7 @@
+# UPDATE
+
+This tool and repo is no longer used nor maintained by pivotaltracker.  If anyone wishes to take over ownership and maintenance, please open an issue.
+
 # Concourse Branch Manager
 
 Automatically build arbitrary branches on [Concourse CI](http://concourse.ci/) without relying on Github pull requests.
