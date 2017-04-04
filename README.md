@@ -24,15 +24,15 @@ It is intended to be used with the
 which is published on Docker Hub at
 [tracker/git-branches-resource](https://hub.docker.com/r/tracker/git-branches-resource/)
 to determine when and which branches should be built.  However, any resource that
-fulfills the same input contract at the git-branches-resource can be used. 
-**NOTE: That there is now an 
+fulfills the same input contract at the git-branches-resource can be used.
+**NOTE: That there is now an
 [identically named git-branches-resource](https://github.com/vito/git-branches-resource)
 which is published on Docker Hub at
 [cfcommunity/git-branches-resource](https://hub.docker.com/r/cfcommunity/git-branches-resource/),
 however, this one is does NOT currently have some of the features which
 [tracker/git-branches-resource](https://hub.docker.com/r/tracker/git-branches-resource/)
 has, such as regex matching and a max branches limit.  The rest of this
-documentation assumes you are using the latter.  Caveat Emptor.** 
+documentation assumes you are using the latter.  Caveat Emptor.**
 
 * (1) The "selected" branches can be based a regex config option passed
   to the git-branches-resource (3) or other resource which fulfills the
@@ -65,7 +65,8 @@ documentation assumes you are using the latter.  Caveat Emptor.**
 
 ### 0. Enable Concourse authentication
 
-* The branch manager will not work with non-authenticating (development mode) Concourse instances. Any password based authentication mecanism will do (Basic, OAuth...)   
+* The branch manager will not work with non-authenticating (development mode) Concourse instances. Any password based authentication mechanism will do (Basic, OAuth...) [Authentication Documentation](https://concourse.ci/authentication.html)
+
 
 ### 1. Edit and update your Concourse pipeline to add the three required concourse-branch-manager resources
 
@@ -314,6 +315,7 @@ To try it out yourself:
     ```
     # secrets.yml
     CONCOURSE_URL: https://my-concourse-server.example.com
+    CONCOURSE_TEAM: my-team-name
     CONCOURSE_USERNAME: my-basic-auth-concourse-username
     CONCOURSE_PASSWORD: my-basic-auth-concourse-password
     ```
