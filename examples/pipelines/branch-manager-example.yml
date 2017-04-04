@@ -4,6 +4,13 @@ groups:
   jobs:
   - branch-manager
 
+# Defines the git-branches-resource
+resource_types:
+- name: git-branches
+  type: docker-image
+  source:
+    repository: tracker/git-branches-resource
+
 resources:
 - name: concourse-branch-manager
   type: git
@@ -75,15 +82,15 @@ jobs:
     trigger: true
   - task: manage-branches
     file: concourse-branch-manager/tasks/manage-branches.yml
-    config:
-      params:
-        BRANCH_RESOURCE_TEMPLATE: template-repo/examples/templates/my-repo-branch-resource-template.yml.erb
-        BRANCH_JOB_TEMPLATE: template-repo/examples/templates/my-repo-branch-job-template.yml.erb
-        PIPELINE_COMMON_RESOURCES_TEMPLATE: template-repo/examples/templates/my-repo-common-resources-template.yml.erb
-        CONCOURSE_URL: {{CONCOURSE_URL}}
-        CONCOURSE_USERNAME: {{CONCOURSE_USERNAME}}
-        CONCOURSE_PASSWORD: {{CONCOURSE_PASSWORD}}
-        PIPELINE_LOAD_VARS_FROM_1: config-repo/examples/config/my-repo-branch-manager-config.yml
-        PIPELINE_LOAD_VARS_FROM_2: credentials-repo/examples/credentials/my-repo-branch-manager-credentials.yml
-        PIPELINE_NAME: cbm-example-branches
-        GROUP_PER_BRANCH: true
+    params:
+      BRANCH_RESOURCE_TEMPLATE: template-repo/examples/templates/my-repo-branch-resource-template.yml.erb
+      BRANCH_JOB_TEMPLATE: template-repo/examples/templates/my-repo-branch-job-template.yml.erb
+      PIPELINE_COMMON_RESOURCES_TEMPLATE: template-repo/examples/templates/my-repo-common-resources-template.yml.erb
+      CONCOURSE_URL: {{CONCOURSE_URL}}
+      CONCOURSE_TEAM: {{CONCOURSE_TEAM}}
+      CONCOURSE_USERNAME: {{CONCOURSE_USERNAME}}
+      CONCOURSE_PASSWORD: {{CONCOURSE_PASSWORD}}
+      PIPELINE_LOAD_VARS_FROM_1: config-repo/examples/config/my-repo-branch-manager-config.yml
+      PIPELINE_LOAD_VARS_FROM_2: credentials-repo/examples/credentials/my-repo-branch-manager-credentials.yml
+      PIPELINE_NAME: cbm-example-branches
+      GROUP_PER_BRANCH: true

@@ -10,8 +10,7 @@
     trigger: true
   - task: my-repo-branch-task
     file: my-repo-branch/examples/tasks/my-repo-branch-task.yml
-    config:
-      params:
+    params:
         BRANCH_NAME: <%= branch_name %>
         EXAMPLE_LOAD_VARS_FROM_CONFIG_KEY: {{EXAMPLE_LOAD_VARS_FROM_CONFIG_KEY}}
         EXAMPLE_LOAD_VARS_FROM_CREDENTIALS_KEY: {{EXAMPLE_LOAD_VARS_FROM_CREDENTIALS_KEY}}
