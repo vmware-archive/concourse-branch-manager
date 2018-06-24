@@ -1,6 +1,12 @@
 # UPDATE
 
-This tool and repo is no longer used nor maintained by pivotaltracker.  If anyone wishes to take over ownership and maintenance, please open an issue.
+This tool and repo is no longer used nor maintained by pivotaltracker.  If anyone wishes to take over ownership
+and maintenance, please open an issue.
+
+# UPDATE 2
+
+The new [work on spatial resources in Concourse](https://github.com/concourse/concourse/issues/2292) should hopefully
+eliminate the need for the "pipelines creating pipelines" approach in this repo.
 
 # Concourse Branch Manager
 
