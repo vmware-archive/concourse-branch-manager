@@ -27,7 +27,7 @@ module Cbm
     def set_pipeline
       download_fly
 
-      log 'Logging into concourse...' +username + password + team
+      log 'Logging into concourse...'
       team_argument = team != nil && team != "" ? "--team-name=#{team}" : ''
       process(
         "#{fly_path} --target=concourse login --concourse-url=#{url} #{team_argument} --username=#{username} --password=#{password}",
