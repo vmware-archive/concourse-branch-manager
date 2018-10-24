@@ -19,6 +19,13 @@ params:
   CONCOURSE_USERNAME: null
   CONCOURSE_PASSWORD: null
   CONCOURSE_TEAM: null
+  PIPELINE_LOAD_VARS_FROM_2: null
+  BRANCH_JOB_TEMPLATE: null
+  PIPELINE_LOAD_VARS_FROM_1: null
+  PIPELINE_RESOURCE_TYPE_TEMPLATE: null
+  BRANCH_RESOURCE_TEMPLATE: null
+  GROUP_PER_BRANCH: null
+  PIPELINE_COMMON_RESOURCES_TEMPLATE: null
 
 run:
   path: concourse-branch-manager/tasks/manage_branches.rb

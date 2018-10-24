@@ -11,11 +11,13 @@ describe Cbm::PipelineUpdater do
     load_vars_from_1 = 'path/to/config'
     load_vars_from_2 = 'path/to/credentials'
     load_vars_from_entries = [load_vars_from_1, load_vars_from_2]
+    team = 'branch-manager'
 
     subject = Cbm::PipelineUpdater.new(
       url,
       username,
       password,
+      team,
       pipeline_file,
       load_vars_from_entries,
       'my-pipeline')
@@ -33,7 +35,8 @@ describe Cbm::PipelineUpdater do
     expect(subject).to receive(:process).with('chmod +x /path/to/fly')
 
     login_cmd = '/path/to/fly --target=concourse login ' \
-      '--concourse-url=http://myconcourse.example.com'
+      '--concourse-url=http://myconcourse.example.com ' \
+      '--team-name=branch-manager --username=admin --password=password'
     expect(subject).to receive(:process)
         .with(login_cmd, timeout: 5, input_lines: %w(admin password))
 
