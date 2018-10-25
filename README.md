@@ -2,13 +2,13 @@
 
 This tool is been enhanced to fix the Concourse 4x update of changing basic Auth to local User.
  * need to Add local User Config to the concourse Docker compose yml like the below
-    ` CONCOURSE_ADD_LOCAL_USER=test:test,guest:guest`
-     ` CONCOURSE_MAIN_TEAM_LOCAL_USER=test `
+    ` CONCOURSE_ADD_LOCAL_USER=testUser:testPassword`
+     ` CONCOURSE_MAIN_TEAM_LOCAL_USER=testUser `
     
     OR
 * Edit your docker-compose yml under the concourse Web section to Add the Below
-  `CONCOURSE_ADD_LOCAL_USER: "test:test,guest:guest" `
-   `CONCOURSE_MAIN_TEAM_LOCAL_USER: "test" `
+  `CONCOURSE_ADD_LOCAL_USER: "testUser:testPassword" `
+   `CONCOURSE_MAIN_TEAM_LOCAL_USER: "testUser" `
 
 # UPDATE
 
