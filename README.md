@@ -1,5 +1,17 @@
 # UPDATE
 
+This tool is been enhanced to fix the Concourse 4x update of changing basic Auth to local User.
+need to Add local User Config to the concourse Docker compose yml like the below
+    - CONCOURSE_ADD_LOCAL_USER=test:test,guest:guest
+    - CONCOURSE_MAIN_TEAM_LOCAL_USER=test
+    
+    or 
+Edit your docker-compose yml under the concourse Web section to Add the Below
+  CONCOURSE_ADD_LOCAL_USER: "test:test,guest:guest"
+  CONCOURSE_MAIN_TEAM_LOCAL_USER: "test"
+
+# UPDATE
+
 This tool and repo is no longer used nor maintained by pivotaltracker.  If anyone wishes to take over ownership
 and maintenance, please open an issue.
 
