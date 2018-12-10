@@ -1,4 +1,5 @@
 # UPDATE
+# Follow the Article for more Info - https://medium.com/@gkumarpradeep0606/fix-concourse-branch-manager-for-concourse-4x-release-build-ci-cd-pipelines-cc29550944e9
 
 This tool is been enhanced to fix the Concourse 4x update of changing basic Auth to local User.
  * need to Add local User Config to the concourse Docker compose yml like the below
