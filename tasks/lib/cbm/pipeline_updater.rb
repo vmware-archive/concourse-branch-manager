@@ -62,17 +62,6 @@ module Cbm
       fly_download_url = "#{url}/api/v1/cli?arch=amd64&platform=linux"
       log fly_download_url
       read_binary_open_mode = 'rb'
-      uri = URI(fly_download_url)
-
-      req = Net::HTTP::Get.new(uri)
-      req.basic_auth username, password
-
-      res = Net::HTTP.start(uri.hostname, uri.port) {|http|
-        http.request(req)
-      }
-      log res.body
-      puts res.body
-
       stream = open(
         fly_download_url,
         read_binary_open_mode,
