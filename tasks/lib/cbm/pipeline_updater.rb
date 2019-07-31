@@ -64,8 +64,7 @@ module Cbm
       read_binary_open_mode = 'rb'
       stream = open(
         fly_download_url,
-        read_binary_open_mode,
-        http_basic_authentication: [username, password])
+        read_binary_open_mode)
       IO.copy_stream(stream, fly_path)
       process("chmod +x #{fly_path}")
     end
